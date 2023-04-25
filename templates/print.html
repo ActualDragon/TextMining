@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+
+    <!-- Font tags -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oxygen:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital@1&display=swap" rel="stylesheet">
+
+    <!--<script src="{{ url_for('static', filename='js/script.js') }}"></script>-->
+
+    <title>Print</title>
+  </head>
+  <body>
+    <header>
+    </header>
+
+    <!-- Form Detsky -->
+    <div class = "m-3 p-3 col-md-4 border border-dark rounded d-inline-block">
+        <div class="row d-flex justify-content-center align-items-center">
+            <div class="card" style="border-radius: 1rem;">
+                <div class="row g-0">
+                    <div class="col-md-8 d-flex align-items-center">
+                        <div class="card-body py-5 px-4 p-md-5">
+                            <form action = "http://localhost:5000/index" method = "POST" enctype = "multipart/form-data">
+                                <h4 class="fw-bold mb-4" id = "file_title">Índice de Detsky</h4>
+                                <p class="mb-4" id = "file_text">Índice Modificado de Riesgo Cardíaco de Detsky</p>
+                                {% if Detsky.edad_p == -1 %}
+                                <label for="Detsky_edad" class="form-label">Edad</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_edad">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="5">Paciente tiene más de 70 años</option>
+                                        <option value="0">El paciente tiene 70 años o menos</option>
+                                    </select>
+                                {% endif %} 
+                                {% if Detsky.IAM_p == -1 %}
+                                <label for="Detsky_IAM" class="form-label">Infarto Agudo de Miocardio</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_IAM">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="10">Se presentó un IAM en los ultimos 6 meses</option>
+                                        <option value="5">Se presentó un IAM hace más de 6 meses</option>
+                                        <option value="0">Nunca se ha presentado un IAM</option>
+                                    </select>
+                                {% endif %} 
+                                {% if Detsky.ang_p == -1 %}
+                                <label for="Detsky_ang" class="form-label">Angina según la Sociedad Cardiovascular Canadiense</label>
+                                <!-- Agregar descripción-->
+                                    <select class="form-select form-select-sm" id= "Detsky_ang">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="10">Se presenta angina clase III</option>
+                                        <option value="20">Se presenta angina clase IV</option>
+                                        <option value="0">No se presenta angina</option>
+                                    </select>
+                                {% endif %} 
+                                {% if Detsky.angina_p == -1 %}
+                                <label for="Detsky_angina" class="form-label">Angina Inestable</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_angina">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="10">Paciente presenta angina inestable menor a 3 meses</option>
+                                        <option value="0">Paciente no presenta angina inestable menor a 3 meses</option>
+                                    </select>
+                                {% endif %}
+                                {% if Detsky.edema_p == -1 %}
+                                <label for="Detsky_edema" class="form-label">Edema pulmonar</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_edema">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="10">Se presentó un edema pulmonar en la ultima semana</option>
+                                        <option value="5">Se presentó un edema pulmonar hace más de una semana</option>
+                                        <option value="0">Nunca se ha presentado un edema pulmonar</option>
+                                    </select>
+                                {% endif %}
+                                {% if Detsky.EA_p == -1 %}
+                                <label for="Detsky_EA" class="form-label">Estenosis aórtica crítica</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_EA">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="20">Paciente presenta estenosis aórtica crítica</option>
+                                        <option value="0">Paciente no presenta estenosis aórtica crítica</option>
+                                    </select>
+                                {% endif %}
+                                {% if Detsky.ECG_p == -1 %}
+                                <label for="Detsky_ECG" class="form-label">Arritmias</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_ECG">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="5">Paciente presenta ritmo no sinusal o extrasístoles auriculares</option>
+                                        <option value="0">Paciente no presenta ritmo no sinusal o extrasístoles auriculares</option>
+                                    </select>
+                                {% endif %}
+                                {% if Detsky.CAP_p == -1 %}
+                                <label for="Detsky_CAP" class="form-label">Contracciones auriculares prematuras</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_CAP">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="5">Paciente presenta más de 5 CAP's /min documentados en cualquier momento</option>
+                                        <option value="0">Paciente no presenta más de 5 CAP's /min</option>
+                                    </select>
+                                {% endif %}
+                                {% if Detsky.estado_p == -1 %}
+                                <label for="Detsky_estado" class="form-label">Pobre estado médico general</label>
+                                <!-- Agregar descripción-->
+                                    <select class="form-select form-select-sm" id= "Detsky_estado">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="5">Paciente presenta pobre estado médico general</option>
+                                        <option value="0">Paciente no presenta pobre estado médico general</option>
+                                    </select>
+                                {% endif %}
+                                {% if Detsky.ER_p == -1 %}
+                                <label for="Detsky_ER" class="form-label">Operación de emergencia</label>
+                                    <select class="form-select form-select-sm" id= "Detsky_ER">
+                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
+                                        <option value="10">La operación a realizar en el paciente es de emergencia</option>
+                                        <option value="0">La operación a realizar en el paciente no es de emergencia</option>
+                                    </select>
+                                {% endif %}
+                                <div class="d-flex justify-content-end pt-1 mb-4">
+                                    <button class="btn btn-primary btn-rounded" id = "submit_file" type="submit" >Enviar</button>
+                                    </div>
+                                 <hr>
+                              </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+ 
+</div>
+
+    <footer class="panel-footer">
+    </footer>
+     
+    <!-- Bootstrap JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <script>
+        async function getRequest(url = '') {
+            const response = await fetch(url, {
+                method: 'GET',
+                cache: 'no-cache'
+            })
+            return response.json()
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            let url = document.location
+            let route = "/flaskwebgui-keep-server-alive"
+            let interval_request = 3 * 1000 //sec
+            function keep_alive_server() {
+                getRequest(url + route)
+                    .then(data => console.log(data))
+            }
+            setInterval(keep_alive_server, interval_request)()
+        })
+    </script>
+  </body>
+</html>
