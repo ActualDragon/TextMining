@@ -1,4 +1,9 @@
-import spacy
+import os
+print(os.urandom(12).hex())
+
+
+
+"""import spacy
 nlp = spacy.load('es_core_news_sm')
 
 text = "El perro no corre por el parque"
@@ -12,7 +17,7 @@ filtered_tokens = [token.text for token in doc if not token.is_stop or token.tex
 print(filtered_tokens)
 
 
-"""import atexit
+import atexit
 
 print("Started")
 input("Press Enter to continue...")

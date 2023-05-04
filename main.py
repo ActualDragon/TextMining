@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, render_template, session, abort #Framework que permite crear aplicaciones web
+from flask import Flask, redirect, url_for, request, render_template, session, abort, jsonify #Framework que permite crear aplicaciones web
 from werkzeug.utils import secure_filename #validar el archivo
 import os #usar funcionalidades dependientes del sistema operativo
 import webbrowser #Manejar el navegador
@@ -16,9 +16,6 @@ class Goldman_Index:
     JVD = 0 #Distención de la vena yugular
     JVD_p = -1
 
-    RS3 = 0 #Ruido cardiaco en S3
-    RS3_p = -1
-
     EA = 0 #Estenosis aórtica
     EA_p = -1
 
@@ -34,8 +31,11 @@ class Goldman_Index:
     estado = 0
     estado_p = -1
 
-    OR = 0 #Cirugia intraperitoneal, intratorácica, aórtica o de emergencia
+    OR = 0 #Cirugia intraperitoneal, intratorácica o aórtica
     OR_p = -1
+
+    ER = 0 #Cirugia de emergencia
+    ER_p = -1
 
     is_empty = 0
 
@@ -130,11 +130,55 @@ class Puntaje_Padua:
 
     is_empty = 0
 
+def MakeClass(type,list):
+    match list:
+        case "G":
+            Name = "Goldman"
+            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER"]
+        case "D":
+            Name = "Detsky"
+            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER"]
+        case "L":
+            Name = "Lee"
+            List = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p", "OR", "isq", "cong", "CV", "diab", "Cr"]
+        case "P":
+            Name = "Padua"
+            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH"]
+        case _:
+            return 0
+    for x in range(len(List)):
+        var = Name+"."+List[x]
+        val = getattr(type,List[x])
+        session[var] = val
+    return 0
+
+def FindClass(type):
+    match type:
+        case "Goldman":
+            Object = Goldman_Index()
+            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER"]
+        case "Detsky":
+            Object = Detsky_Index()
+            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER"]
+        case "Lee":
+            Object = Puntaje_Lee()
+            List = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p", "OR", "isq", "cong", "CV", "diab", "Cr"]
+        case "Padua":
+            Object = Puntaje_Padua()
+            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH"]
+        case _:
+            return 0
+    for x in range(len(List)):
+        var = type+"."+List[x]
+        val = session.get(var)
+        setattr(Object, List[x], val)
+    return Object
 
 # _.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.
 # CONSTRUCTOR DE FLASH
 
 app = Flask(__name__)
+app.secret_key = '6b615dbef677bb488569e68c'
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 #Limitar archivos a maximo 1MB
 app.config['UPLOAD_PATH'] = r'./static/uploads' #Path al que se subira la copia temporal de los archivos a ser procesados
 app.config['UPLOAD_EXTENSIONS'] = ['.doc', '.docx'] #Extensiones permitidas
@@ -180,11 +224,31 @@ def indices(name):
     fx.Find_Edad(f,Goldman, Detsky, Padua)
     fx.Find_IAM(f, Goldman, Detsky)
     fx.Find_JVD(f, Goldman)
+    fx.Find_EA(f, Goldman,Detsky)
+    fx.Find_ECG(f, Goldman,Detsky)
+    fx.Find_CAP(f,Detsky)
+    fx.Find_CVP(f,Goldman, Detsky)
+    fx.Find_estado(f, Goldman, Detsky)
+    fx.Find_OR(f, Goldman, Lee)
+    fx.Find_CVP(f,Goldman, Detsky)
+    MakeClass(Goldman,"G")
     empty = fx.FindEmpty(Goldman, Lee, Detsky, Padua) #Determinar si hay atributos vacios
     if empty == 1:
         return render_template('validar.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si hay atributos vacios, redirigir a un form que pide los datos faltantes
     else:
         return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si no hay atributos vacios, redirigir a una pagina que imprime los resultados
+
+@app.route('/print', methods=['POST', 'GET'])
+def print():
+    Goldman = FindClass("Goldman")
+    Detsky = FindClass("Detsky")
+    Lee = FindClass("Lee")
+    Padua = FindClass("Padua")
+    if Goldman.edad_p == -1:
+        Goldman.edad = request.form.get('Edad_Value')
+        Goldman.edad_p = request.form.get('Edad_Point')
+    return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua)
+
 
 #Funcion main driver
 if __name__ == '__main__':

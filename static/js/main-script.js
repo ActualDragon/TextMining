@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded",
     var my_func = function(event) {
     load.style.display = "block";
     console.log("Loading")
-    //event.preventDefault();
     };
 
     span.onclick = function() {
