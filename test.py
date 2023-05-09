@@ -1,3 +1,14 @@
+"""
+term = "5 contracciones"
+for i in term.split():
+    try: #intentar convertir el token a float
+        cant = float(i)
+        break #salir del loop si i es la primera cadena que si es float
+    except:
+        continue
+print("Cantidad: " + str(cant)) #1.5
+
+
 import spacy
 nlp = spacy.load('es_core_news_sm')
 
@@ -12,7 +23,7 @@ filtered_tokens = [token.text for token in doc if not token.is_stop or token.tex
 print(filtered_tokens)
 
 
-"""import atexit
+import atexit
 
 print("Started")
 input("Press Enter to continue...")

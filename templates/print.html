@@ -8,7 +8,6 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
-    
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
 
     <!-- Font tags -->
@@ -19,127 +18,362 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital@1&display=swap" rel="stylesheet">
 
-    <!--<script src="{{ url_for('static', filename='js/script.js') }}"></script>-->
-
     <title>Print</title>
   </head>
   <body>
     <header>
     </header>
 
-    <!-- Form Detsky -->
-    <div class = "m-3 p-3 col-md-4 border border-dark rounded d-inline-block">
-        <div class="row d-flex justify-content-center align-items-center">
-            <div class="card" style="border-radius: 1rem;">
-                <div class="row g-0">
-                    <div class="col-md-8 d-flex align-items-center">
+    <div class="container-fluid">
+        <!-- Goldman -->
+        <div class = "m-5 p-3 col-md-5 rounded d-inline-block" id = "Goldman_Frm">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="card" style="border-radius: 1rem;">
                         <div class="card-body py-5 px-4 p-md-5">
-                            <form action = "http://localhost:5000/index" method = "POST" enctype = "multipart/form-data">
-                                <h4 class="fw-bold mb-4" id = "file_title">Índice de Detsky</h4>
+                                <h4 class="fw-bold mb-4" id = "file_title">Índice de Goldman</h4>
+                                <p class="mb-4">Índice de Riesgo Cardíaco en Cirugía no Cardiaca</p>
+                                <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                      <tr>
+                                        <th scope="col" style="width: 20%">Criterio</th>
+                                        <th scope="col" style="width: 25%">Descripción</th>
+                                        <th scope="col" style="width: 15%">Puntaje</th>
+                                        <th scope="col" style="width: 30%">Valor expediente</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>Edad</td>
+                                        <td>&gt;70 años</td>
+                                        <td>{{Goldman.edad_p}}</td>
+                                        <td>{{Goldman.edad}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>IAM</td>
+                                        <td>Infarto agudo de miocardio en los últimos 6 meses</td>
+                                        <td>{{Goldman.IAM_p}}</td>
+                                        <td>{{Goldman.IAM}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td class="table-border">JVD</td>
+                                        <td class="table-border">Distensión de la vena yugular o</td>
+                                        <td rowspan="2">{{Goldman.JVD_p}}</td>
+                                        <td class = "table-border">{{Goldman.JVD[0]}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Ruido S3</td>
+                                        <td>Ruido cardíaco en S3</td>
+                                        <td>{{Goldman.JVD[1]}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Estenosis aórtica significativa</td>
+                                        <td>{{Goldman.EA_p}}</td>
+                                        <td>{{Goldman.EA}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Ritmo distinto al sinusal o contracciones auriculares prematuras</td>
+                                        <td>{{Goldman.ECG_p}}</td>
+                                        <td>{{Goldman.ECG}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>CVP</td>
+                                        <td>5 contracciones ventriculares prematuras / min registradas en cualquier momento</td>
+                                        <td>{{Goldman.CVP_p}}</td>
+                                        <td>{{Goldman.CVP}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Estado general de salud</td>
+                                        <td>PO2 &lt;60 o PCO2 &gt;50 mm Hg, K&lt; 3.0 o HCO3&lt; 20 meq/litro, BUN&lt; 50 o Cr&lt; 3.0 mg/dl, SGOT abnormal, señales de enfermedad hepática crónica o paciente postrado.</td>
+                                        <td>{{Goldman.estado_p}}</td>
+                                        <td>{{Goldman.estado}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Cirugía</td>
+                                        <td>Cirugia intraperitoneal, intratorácica o aórtica</td>
+                                        <td>{{Goldman.OR_p}}</td>
+                                        <td>{{Goldman.OR}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Cirugía de emergencia</td>
+                                        <td>{{Goldman.ER_p}}</td>
+                                        <td>{{Goldman.ER}}</td>
+                                      </tr>
+                                      <hr>
+                                      <tr>
+                                        <th scope="row">Puntaje Total</th>
+                                        <td colspan="2"></td>
+                                        <td>{{Goldman.total}}</td>
+                                      </tr>
+                                      <tr>
+                                        <th scope="row">Riesgo encontrado</th>
+                                        <td colspan="3">{{Goldman.eval}}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                              </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Lee -->
+        <div class = "m-5 p-3 col-md-5 rounded d-inline-block" id = "Lee_Frm">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="card" style="border-radius: 1rem;">
+                            <div class="card-body py-5 px-4 p-md-5">
+                                <h4 class="fw-bold mb-4" id = "file_title">Puntaje de Lee</h4>
+                                <p class="mb-4" id = "file_text">Índice Revisado de Riesgo Cardíaco</p>
+                                <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                      <tr>
+                                        <th scope="col">Criterio</th>
+                                        <th scope="col">Descripción</th>
+                                        <th scope="col">Puntaje</th>
+                                        <th scope="col">Valor encontrado en el expediente</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>Cirugía de alto riesgo</td>
+                                        <td>Cirugía intraperitoneal, intratorácica o suprainguinal vascular</td>
+                                        <td>{{Lee.OR_p}}</td>
+                                        <td>{{Lee.OR}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Historial de enfermedad cardíaca isquémica</td>
+                                        <td>{{Lee.isq_p}}</td>
+                                        <td>{{Lee.isq}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Historial de enfermedad cardíaca congestiva</td>
+                                        <td>{{Lee.cong_p}}</td>
+                                        <td>{{Lee.cong}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Historial de enfermedad cerebrovascular</td>
+                                        <td>{{Lee.CV_p}}</td>
+                                        <td>{{Lee.CV}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Terapia de insulina para diabéticos</td>
+                                        <td>{{Lee.diab_p}}</td>
+                                        <td>{{Lee.diab}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Creatinina</td>
+                                        <td>Creatinina preoperatoria &lt; a 2 mg/dL (o &lt; 177 micromol/L)</td>
+                                        <td>{{Lee.Cr_p}}</td>
+                                        <td>{{Lee.Cr}}</td>
+                                      </tr>
+                                      <hr>
+                                      <tr>
+                                        <th scope="row">Puntaje Total</th>
+                                        <td colspan="2"></td>
+                                        <td>{{Lee.total}}</td>
+                                      </tr>
+                                      <tr>
+                                        <th scope="row">Riesgo encontrado</th>
+                                        <td colspan="3">{{Lee.eval}}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Detsky -->
+        <div class = "m-5 p-3 col-md-5 rounded d-inline-block" id = "Detsky_Frm">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="card" style="border-radius: 1rem;">
+                            <div class="card-body py-5 px-4 p-md-5">
+                                <h4 class="fw-bold mb-4" id = "file_title">Índice Detsky</h4>
                                 <p class="mb-4" id = "file_text">Índice Modificado de Riesgo Cardíaco de Detsky</p>
-                                {% if Detsky.edad_p == -1 %}
-                                <label for="Detsky_edad" class="form-label">Edad</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_edad">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="5">Paciente tiene más de 70 años</option>
-                                        <option value="0">El paciente tiene 70 años o menos</option>
-                                    </select>
-                                {% endif %} 
-                                {% if Detsky.IAM_p == -1 %}
-                                <label for="Detsky_IAM" class="form-label">Infarto Agudo de Miocardio</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_IAM">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="10">Se presentó un IAM en los ultimos 6 meses</option>
-                                        <option value="5">Se presentó un IAM hace más de 6 meses</option>
-                                        <option value="0">Nunca se ha presentado un IAM</option>
-                                    </select>
-                                {% endif %} 
-                                {% if Detsky.ang_p == -1 %}
-                                <label for="Detsky_ang" class="form-label">Angina según la Sociedad Cardiovascular Canadiense</label>
-                                <!-- Agregar descripción-->
-                                    <select class="form-select form-select-sm" id= "Detsky_ang">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="10">Se presenta angina clase III</option>
-                                        <option value="20">Se presenta angina clase IV</option>
-                                        <option value="0">No se presenta angina</option>
-                                    </select>
-                                {% endif %} 
-                                {% if Detsky.angina_p == -1 %}
-                                <label for="Detsky_angina" class="form-label">Angina Inestable</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_angina">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="10">Paciente presenta angina inestable menor a 3 meses</option>
-                                        <option value="0">Paciente no presenta angina inestable menor a 3 meses</option>
-                                    </select>
-                                {% endif %}
-                                {% if Detsky.edema_p == -1 %}
-                                <label for="Detsky_edema" class="form-label">Edema pulmonar</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_edema">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="10">Se presentó un edema pulmonar en la ultima semana</option>
-                                        <option value="5">Se presentó un edema pulmonar hace más de una semana</option>
-                                        <option value="0">Nunca se ha presentado un edema pulmonar</option>
-                                    </select>
-                                {% endif %}
-                                {% if Detsky.EA_p == -1 %}
-                                <label for="Detsky_EA" class="form-label">Estenosis aórtica crítica</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_EA">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="20">Paciente presenta estenosis aórtica crítica</option>
-                                        <option value="0">Paciente no presenta estenosis aórtica crítica</option>
-                                    </select>
-                                {% endif %}
-                                {% if Detsky.ECG_p == -1 %}
-                                <label for="Detsky_ECG" class="form-label">Arritmias</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_ECG">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="5">Paciente presenta ritmo no sinusal o extrasístoles auriculares</option>
-                                        <option value="0">Paciente no presenta ritmo no sinusal o extrasístoles auriculares</option>
-                                    </select>
-                                {% endif %}
-                                {% if Detsky.CAP_p == -1 %}
-                                <label for="Detsky_CAP" class="form-label">Contracciones auriculares prematuras</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_CAP">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="5">Paciente presenta más de 5 CAP's /min documentados en cualquier momento</option>
-                                        <option value="0">Paciente no presenta más de 5 CAP's /min</option>
-                                    </select>
-                                {% endif %}
-                                {% if Detsky.estado_p == -1 %}
-                                <label for="Detsky_estado" class="form-label">Pobre estado médico general</label>
-                                <!-- Agregar descripción-->
-                                    <select class="form-select form-select-sm" id= "Detsky_estado">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="5">Paciente presenta pobre estado médico general</option>
-                                        <option value="0">Paciente no presenta pobre estado médico general</option>
-                                    </select>
-                                {% endif %}
-                                {% if Detsky.ER_p == -1 %}
-                                <label for="Detsky_ER" class="form-label">Operación de emergencia</label>
-                                    <select class="form-select form-select-sm" id= "Detsky_ER">
-                                        <option selected>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="10">La operación a realizar en el paciente es de emergencia</option>
-                                        <option value="0">La operación a realizar en el paciente no es de emergencia</option>
-                                    </select>
-                                {% endif %}
-                                <div class="d-flex justify-content-end pt-1 mb-4">
-                                    <button class="btn btn-primary btn-rounded" id = "submit_file" type="submit" >Enviar</button>
-                                    </div>
-                                 <hr>
-                              </form>
+                                <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                      <tr>
+                                        <th scope="col">Criterio</th>
+                                        <th scope="col">Descripción</th>
+                                        <th scope="col">Puntaje</th>
+                                        <th scope="col">Valor encontrado en el expediente</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>IAM</td>
+                                        <td>Infarto agudo de miocardio (el puntaje varía si fue hace más o menos de 6 meses)</td>
+                                        <td>{{Detsky.IAM_p}}</td>
+                                        <td>{{Detsky.IAM}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Angina de pecho</td>
+                                        <td>Según la Sociedad Cardiovascular Canadiense</td>
+                                        <td>{{Detsky.ang_p}}</td>
+                                        <td>{{Detsky.ang}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Anigna</td>
+                                        <td>Angina inestable &gt; 3 meses</td>
+                                        <td>{{Detsky.angina_p}}</td>
+                                        <td>{{Detsky.angina}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Edema pulmonar</td>
+                                        <td>&gt; varía el puntaje si fue hace 1 semana o en cualquier otro momento</td>
+                                        <td>{{Detsky.edema_p}}</td>
+                                        <td>{{Detsky.edema}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Estenosis aórtica</td>
+                                        <td>{{Detsky.EA_p}}</td>
+                                        <td>{{Detsky.EA}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Ritmo distinto al sinusal o extrasístoles auriculares</td>
+                                        <td>{{Detsky.ECG_p}}</td>
+                                        <td>{{Detsky.ECG}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>CAP</td>
+                                        <td>5 contracciones auriculares prematuras / min registradas en cualquier momento</td>
+                                        <td>{{Detsky.CAP_p}}</td>
+                                        <td>{{Detsky.CAP}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Estado general de salud</td>
+                                        <td>PO2 &lt;60 o PCO2 &gt;50 mm Hg, K&lt; 3.0 o HCO3&lt; 20 meq/litro, BUN&lt; 50 o Cr&lt; 3.0 mg/dl, SGOT abnormal, señales de enfermedad hepática crónica o paciente postrado.</td>
+                                        <td>{{Detsky.estado_p}}</td>
+                                        <td>{{Detsky.estado}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Edad</td>
+                                        <td>&gt;70 años</td>
+                                        <td>{{Detsky.edad_p}}</td>
+                                        <td>{{Detsky.edad}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Cirugía de emergencia</td>
+                                        <td>{{Detsky.ER_p}}</td>
+                                        <td>{{Detsky.ER}}</td>
+                                      </tr>
+                                      <hr>
+                                      <tr>
+                                        <th scope="row">Puntaje Total</th>
+                                        <td colspan="2"></td>
+                                        <td>{{Detsky.total}}</td>
+                                      </tr>
+                                      <tr>
+                                        <th scope="row">Riesgo encontrado</th>
+                                        <td colspan="3">{{Detsky.eval}}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
- 
-</div>
 
+        <!-- Form Padua -->
+        <div class = "m-5 p-3 col-md-5 rounded d-inline-block" id = "Padua_Frm">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="card" style="border-radius: 1rem;">
+                            <div class="card-body py-5 px-4 p-md-5">
+                                <h4 class="fw-bold mb-4" id = "file_title">Puntaje Predictivo de Padua</h4>
+                                <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                      <tr>
+                                        <th scope="col">Criterio</th>
+                                        <th scope="col">Descripción</th>
+                                        <th scope="col">Puntaje</th>
+                                        <th scope="col">Valor encontrado en el expediente</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr>
+                                        <td>Cáncer activo</td>
+                                        <td>Metástasis y/o han pasado por quimioterapia o radioterapia en los últimos 6 meses</td>
+                                        <td>{{Padua.cancer_p}}</td>
+                                        <td>{{Padua.cancer}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Tromboembolismo venoso</td>
+                                        <td>Excluyendo trombosis venosa superficial</td>
+                                        <td>{{Padua.TEV_p}}</td>
+                                        <td>{{Padua.TEV}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Movilidad reducida</td>
+                                        <td>Postrado con privilegios de baño (por incapacidad del paciente u órdenes del médico) por lo menos 3 días</td>
+                                        <td>{{Padua.mov_p}}</td>
+                                        <td>{{Padua.mov}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Condición trombofília conocida</td>
+                                        <td>Defectos de antitrombina, proteína C o S, factor V Leiden, mutación de protrombina G20210A, síndrome antifosfolípido</td>
+                                        <td>{{Padua.trombo_p}}</td>
+                                        <td>{{Padua.trombo}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Trauma reciente o cirugía</td>
+                                        <td>&gt;= 1 mes</td>
+                                        <td>{{Padua.OR_p}}</td>
+                                        <td>{{Padua.OR}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Edad</td>
+                                        <td>&gt;70 años</td>
+                                        <td>{{Padua.edad_p}}</td>
+                                        <td>{{Padua.edad}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Falla cardíaca y/o respiratoria</td>
+                                        <td>{{Padua.falla_p}}</td>
+                                        <td>{{Padua.falla}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Desorden reumatológico agudo o infarto agudo de miocardio</td>
+                                        <td>{{Padua.IAM_p}}</td>
+                                        <td>{{Padua.IAM}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td>Obesidad</td>
+                                        <td>BMI &lt;= 30</td>
+                                        <td>{{Padua.BMI_p}}</td>
+                                        <td>{{Padua.BMI}}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colspan="2">Tratamiento hormonal actual</td>
+                                        <td>{{Padua.TH_p}}</td>
+                                        <td>{{Padua.TH}}</td>
+                                      </tr>
+                                      <hr>
+                                      <tr>
+                                        <th scope="row">Puntaje Total</th>
+                                        <td colspan="2"></td>
+                                        <td>{{Padua.total}}</td>
+                                      </tr>
+                                      <tr>
+                                        <th scope="row">Riesgo encontrado</th>
+                                        <td colspan="3">{{Padua.eval}}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
     <footer class="panel-footer">
     </footer>
-     
+
     <!-- Bootstrap JavaScript Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
