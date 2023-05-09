@@ -94,26 +94,22 @@ def Find_Edad(f, Goldman, Detsky, Padua):
         print("No hay antecedentes")
     if edad == []:
         edad.append(0)
-    Goldman.edad = edad
-    Detsky.edad = edad
-    Padua.edad = edad
-    print("Edad: %s", edad)
+    Goldman.edad = Detsky.edad = Padua.edad = edad[0]
+    print("Edad: %s", edad[0])
 
     age = int(edad[0])
     if age != 0: #Validar se que encontro la edad
         if age > 70:
-            Goldman.edad_p = 5 #Si el paciente tiene mas de 70 años se le agregan 5 puntos (1 en Padua)
-            Detsky.edad_p = 5
+            Goldman.edad_p = Detsky.edad_p = 5 #Si el paciente tiene mas de 70 años se le agregan 5 puntos (1 en Padua)
             Padua.edad_p = 1
         else:
-            Goldman.edad_p = 0 #Si el paciente tiene 70 años o menos no se le agregan puntos
-            Detsky.edad_p = 0
-            Padua.edad_p = 0
+            Goldman.edad_p = Detsky.edad_p = Padua.edad_p = 0 #Si el paciente tiene 70 años o menos no se le agregan puntos
     return 0
 
 #Encontrar la cantidad de sustancia en el paciente
 def Find_Cant(term):
     term = str(term)
+    cant = 0
     for i in term.split():
         try: #intentar convertir el token a float
             cant = float(i)
@@ -124,36 +120,34 @@ def Find_Cant(term):
     return cant
 
 #Determinar si ha habido infarto agudo de miocardio
-def Find_IAM(f, Goldman, Detsky):
+def Find_IAM(f, Goldman, Detsky, Padua):
     terms = ['infarto agudo miocardio', ' im ', ' ima ', ' iam ', 'infarto cardiaco', 'ataque cardiaco', 'ataque corazon', 'infarto miocardio', 'infarto miocardico', 'sindrome isquemico coronario agudo', ' sica ', 'sindrome coronario agudo', 'evento coronario agudo', 'insuficiencia coronaria aguda', 'evento coronario isquemico agudo', 'necrosis miocardica aguda', 'crisis coronaria aguda', 'sindrome isquemia miocardica aguda', 'evento coronario isquemico agudo']
     text = Find_Syn(terms,f)
     print(text.Term)
     if text.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.IAM = text.Term
-        Detsky.IAM = text.Term
+        Goldman.IAM = Detsky.IAM = Padua.IAM = text.Term
+        Padua.IAM_p = 1
         time = Find_Time(f,text)
         if time != 0:
             i = time.split()
             match i[1]:
                 case "meses":
                     if int(i[0]) <=6:
-                        Goldman.IAM_p = 10
-                        Detsky.IAM_p = 10
+                        Goldman.IAM_p = Detsky.IAM_p = 10
                 case "semanas":
                     if int(i[0]) <=24:
-                        Goldman.IAM_p = 10
-                        Detsky.IAM_p = 10
+                        Goldman.IAM_p = Detsky.IAM_p = 10
                 case "dias":
                     if int(i[0]) <=183:
-                        Goldman.IAM_p = 10
-                        Detsky.IAM_p = 10
+                        Goldman.IAM_p = Detsky.IAM_p = 10
                 case _:
                     Detsky.IAM_p = 5
                     Goldman.IAM_p = 0
         else:
-            Detsky.IAM_p = 0
+            Detsky.IAM_p = 6
             Goldman.IAM_p = 0
     print("IAM: %s", text.Term)
+    print("Detsky: %d", Detsky.IAM_p)
     return 0
 
 #Determinar si hay distensión de la vena yugular o ruido cardíaco en S3
@@ -164,9 +158,9 @@ def Find_JVD(f, Goldman):
     text2 = Find_Syn(terms2,f)
     if text1.Term != 0 or text2.Term != 0: #Determinar si se encontró una coincidencia
         if  text1.Term != 0:
-            Goldman.JVD = text1.Term
-        else:
-            Goldman.JVD = text2.Term
+            Goldman.JVD[0] = text1.Term
+        if  text2.Term != 0:
+            Goldman.JVD[1] = text2.Term
         Goldman.JVD_p = 11
     print("JVD: %s", text1.Term)
     print("RS3: %s", text2.Term)
@@ -177,8 +171,7 @@ def Find_EA(f, Goldman, Detsky):
     terms = ['valvulopatia aortica', 'estenosis valvular aortica', ' ea ', ' eao ', 'sorta estenotica', 'aortoestenosis', 'estenosis aorta', 'estenosis aortica', 'estenosis valvular aortica', 'obstruccion aortica']
     text = Find_Syn(terms,f)
     if text.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.EA = text.Term
-        Detsky.EA = text.Term
+        Goldman.EA = Detsky.EA = text.Term
         Goldman.EA_p = 3
         Detsky.EA_p = 20
     print("EA: %s", text.Term)
@@ -215,8 +208,10 @@ def Find_CAP(f,Detsky):
     text = Find_Syn(terms,f)
     if text.Term != 0: #Determinar si se encontró una coincidencia
         Detsky.CAP = text.Term
-        Detsky.CAP_p = 5
-    print("CAP: %s", text.Term)
+        x = Find_Cant(text.Term)
+        if x >= 5: Detsky.CAP_p = 5
+        else: Detsky.CAP_p = 0
+    print("CAP 2: %s", text.Term)
     return 0
 
 #Determinar si hay contracciones ventriculares prematuras
@@ -226,50 +221,69 @@ def Find_CVP(f,Goldman):
     if text.Term != 0: #Determinar si se encontró una coincidencia
         Goldman.CVP = text.Term
         Goldman.CVP_p = 5
-    print("CVP: %s", text.Term)
+    print("CVP: %s", Goldman.CVP)
     return 0
 
 
 #Determinar estado general
-def Find_estado(f, Goldman, Detsky):
+def Find_estado(f, Goldman, Detsky, Padua):
 
     #Encontrar el número en todos
-
+    find = x = ""
+    cant1 = cant3 = cant4 = cant5 = cant6 = cant7 = 0
     terms1 = ['pao2', 'presion parcial oxigeno', 'presion oxigeno', 'po2', 'presion arterial oxigeno', 'tension parcial oxigeno ', 'nivel oxigeno'] #Presión parcial de O2
     terms2 = ['cirrosis', 'fibrosis hepatica', 'esteatosis hepatica', 'hepatitis', 'hipertension portal', 'ascitis', 'hiperbilirrubinemia', 'hepatomegalia', 'elevacion transaminasas', 'pruebas funcion hepatica alteradas', 'varices esofagicas', 'cabeza medusa', 'caput medusae', 'tiempos coagulacion alterados', 'colangitis biliar', 'encefalopatia hepatica', 'elastografia hepatica', 'hepatopatia', 'ictericia', 'cancer higado', 'cancer hepatico','enfermedad hepatica', 'daño hepatico cronico',  'insuficiencia hepatica cronica', 'niveles elevados enzimas hepaticas', 'bilirrubina elevada', 'albumina baja', 'tiempo protrombina prolongado.', 'trombocitopenia', 'prurito', 'hepatomegalia'] #Enfermedad hepática
     terms3 = ['pco2', 'p co2', 'presion parcial co2', 'tension co2', 'presion parcial dioxido carbono', 'co2 parcial'] #Presion parcial de CO2
     terms4 = ['potasio serico', 'concentración potasio', 'niveles potasio', 'nivel potasio', 'kalemia', 'potasio plasmatico', 'K serico'] #Niveles de K
     terms5 = ['nivel bicarbonato sangre', 'bicarbonato serico', 'co2 serico', 'hco3 serico', 'concentracion bicarbonato sangre'] #Niveles de bicarbonato
     terms6 =  ['nitrogeno ureico sangre', ' bun ', 'urea sangre', 'azotemia', 'concentracion nitrogeno ureico', ' nus  '] #Nitrogeno ureico en sangre
-    terms7 = ['creatinina sangre', 'creatinina serica', 'creatinina plasmatica', 'creatinina suero', 'concentracion creatinina'] #Creatinina
+    terms7 = ['creatinina sangre', 'creatinina serica', 'creatinina plasmatica', 'creatinina suero', 'concentracion creatinina', 'creatinina'] #Creatinina
     terms8 = ['transaminasa glutamico oxalacetica elevada', 'elevacion tgo', 'tgo alto', 'aspartato transaminasa alta', 'elevacion ast', 'ast elevada', 'niveles elevados tgo', 'aumento tgo', 'enzimas hepaticas elevadas', 'niveles elevados transaminasa glutamico oxalacetica', 'aumento transaminasa glutamico oxalacetica', 'transaminasa glutamico oxalacetica alta', 'valores elevados transaminasa glutamico oxalacetica', 'anormalidad transaminasa glutamico oxalacetica', 'niveles anormales transaminasa glutamico oxalacetica', 'transaminasa glutamico oxalacetica fuera rango', 'sgot anormal', 'sgot elevado'] #SGOT
     terms9 = ['postrada', 'inmovilizada', 'encamada', 'sedentaria', 'inactiva','postrado', 'inmovilizado', 'encamado', 'sedentario', 'inactivo' ] #Paciente postrado
     text1 = Find_Syn(terms1,f)
-    if text1 != 0 : cant1 = Find_Cant(text1.Term)
+    if text1.Term != 0 :
+        cant1 = Find_Cant(text1.Term)
+        find = find + " " + str(cant1) + " " + str(text1.Term)
     text2 = Find_Syn(terms2,f)
+    if text2.Term != 0: find = find + " " + str(text2.Term)
     text3 = Find_Syn(terms3,f)
-    if text3 != 0 : cant3 = Find_Cant(text3.Term)
+    if text3.Term != 0 :
+        cant3 = Find_Cant(text3.Term)
+        find = find + " " + str(cant3) + " " + str(text3.Term)
     text4 = Find_Syn(terms4,f)
-    if text4 != 0 : cant4 = Find_Cant(text4.Term)
+    if text4.Term != 0 :
+        cant4 = Find_Cant(text4.Term)
+        find = find + " " + str(cant4) + " " + str(text4.Term)
     text5 = Find_Syn(terms5,f)
-    if text5 != 0 : cant5 = Find_Cant(text5.Term)
+    if text5.Term != 0 :
+        cant5 = Find_Cant(text5.Term)
+        find = find + " " + str(cant5) + " " + str(text5.Term)
     text6 = Find_Syn(terms6,f)
-    if text6 != 0 : cant6 = Find_Cant(text6.Term)
+    if text6.Term != 0 :
+        cant6 = Find_Cant(text6.Term)
+        find = find + " " + str(cant6) + " " + str(text6.Term)
     text7 = Find_Syn(terms7,f)
-    if text7 != 0 : cant7 = Find_Cant(text7.Term)
+    if text7.Term != 0 :
+        cant7 = Find_Cant(text7.Term)
+        find = find + " " + str(cant7) + " " + str(text7.Term)
     text8 = Find_Syn(terms8,f)
+    if text8.Term != 0: find = find + " " + str(text8.Term)
     text9 = Find_Syn(terms9,f)
-    if cant1 < 60 or text2 != 0 or cant3 > 50 or cant4 < 3 or cant5 < 20 or cant6 > 50 or cant7 >3 or text8 != 0 or text9 != 0: #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
-        if  text1.Term != 0:
-            Detsky.ECG = text1.Term
-        else:
-            Detsky.ECG = text2.Term
-        Detsky.ECG_p = 5
+    if text9.Term != 0:
+        find = find + " " + str(text9.Term)
+        Padua.mov = text9.Term
+        Padua.mov_p = 3
+    if text1.Term !=0 or text2.Term !=0 or text3.Term !=0 or text4.Term !=0 or text5.Term !=0 or text6.Term !=0 or text7.Term !=0 or text8.Term !=0 or text9.Term !=0:
+        Goldman.estado = Detsky.estado = find
+        if cant1 <= 60 or text2.Term != 0 or cant3 > 50 or cant4 < 3 or cant5 < 20 or cant6 > 50 or cant7 >3 or text8.Term != 0 or text9.Term != 0: #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
+            Goldman.estado_p = 3
+            Detsky.estado_p = 5
     print("ritmo sinusal: %s", text1.Term)
     print("extrasistoles: %s", text2.Term)
     print("CAP: %s", text3.Term)
     return 0
 
+#Determinar el tipo de cirugía
 def Find_OR(f, Goldman, Lee):
     terms1 =['laparoscopia', 'laparotomia', 'laparotomia exploratoria', 'cirugia abierta de abdomen', 'colecistectomia', 'apendicectomia', 'reseccion intestinal', 'gastrectomia', 'hemicolectomia', 'cirugia intraperitoneal', 'cirugia abdomen', 'cirugia abdominal', 'reseccion intestinal', 'colectomia', 'gastrectomia', 'herniorrafia', 'histerectomia', 'ooforectomia', 'nefrectomia', 'quistectomia ovarica', 'esplenectomia', 'pancreatectomia'] #intraperitoneal
     terms2 = ['cirugia toracica', 'cirugia de torax', 'cirugia intratoracica', 'toracotomia', 'toracoscopia', 'reseccion pulmonar', 'lobectomia', 'neumonectomia', 'pleurectomia', 'pleurodesis', 'timectomia', 'mediastinoscopia', 'mediastinotomia', 'drenaje toracico', 'cirugia esofago toracico', 'cirugia pared toracica', 'cirugia aorta toracica'] #intratoracica
@@ -302,15 +316,14 @@ def Find_OR(f, Goldman, Lee):
     return 0
 
 #Determinar si la operacion es de emergencia
-def Find_CVP(f,Goldman, Detsky):
+def Find_ER(f,Goldman, Detsky):
     terms = ['cirugia urgencia', 'cirugia emergencia', 'cirugia inmediata', 'cirugia rescate', 'cirugia critica', 'procedimiento salvamiento', 'pprocedimiento vital', 'intervencion emergencia', 'tratamiento quirurgico urgencia', 'tratamiento quirurgico emergencia', 'procedimiento quirurgico critico', 'intervencion urgencia', 'procedimiento de rescate', 'intervencion critica', 'tratamiento quirurgico vital', 'procedimiento quirurgico emergencia']
     text = Find_Syn(terms,f)
     if text.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.ER = text.Term
-        Detsky.ER = text.Term
+        Goldman.ER = Detsky.ER = text.Term
         Goldman.ER_p = 4
         Detsky.ER_p = 10
-    print("CVP: %s", text.Term)
+    print("ER: %s", text.Term)
     return 0
 
 #Determinar si hay algun criterio no encontrado
@@ -342,3 +355,63 @@ def FindEmpty(Goldman, Lee, Detsky, Padua):
         return 1 #Algun campo se encuentra vacio
     else:
         return 0 #Ningun campo esta vacio
+
+#Hacer la suma final
+def AddTotal(Goldman, Detsky, Lee, Padua):
+    G_class = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p"]
+    L_class = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p"]
+    D_class = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p"]
+    P_class = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p"]
+    #Validar si existe un atributo vacio
+    for x in G_class:
+        val = getattr(Goldman,x)
+        if val != -1:
+           print("Val: " + x)
+           print(val)
+           Goldman.total = Goldman.total + int(val)
+    if Goldman.total in range(0,5):
+        Goldman.eval = "El paciente presenta un riesgo del 1% de presentar complicaciones"
+    if Goldman.total in range(6,12):
+        Goldman.eval = "El paciente presenta un riesgo del 7% de presentar complicaciones"
+    if Goldman.total in range(13,25):
+        Goldman.eval = "El paciente presenta un riesgo del 14% de presentar complicaciones"
+    if Goldman.total in range(26,53):
+        Goldman.eval = "El paciente presenta un riesgo del 28% de presentar complicaciones"
+    val = 0
+    for x in D_class:
+        val = getattr(Detsky,x)
+        print("Val: " + x)
+        print(val)
+        if val != -1:
+           Detsky.total = Detsky.total + int(val)
+    if Detsky.total in range(0,5):
+        Detsky.eval = "El paciente presenta un riesgo del 6% de presentar complicaciones"
+    if Detsky.total in range(6,12):
+        Detsky.eval = "El paciente presenta un riesgo del 7% de presentar complicaciones"
+    if Detsky.total in range(13,25):
+        Detsky.eval = "El paciente presenta un riesgo del 20% de presentar complicaciones"
+    if Detsky.total in range(26,85):
+        Detsky.eval = "El paciente presenta un riesgo del 100% de presentar complicaciones"
+    val = 0
+    for x in L_class:
+        val = getattr(Lee,x)
+        if val != -1:
+           Lee.total = Lee.total + int(val)
+    if Lee.total == 0:
+        Lee.eval = "El paciente presenta un riesgo del 0.4% de presentar complicaciones"
+    if Lee.total == 1:
+        Lee.eval = "El paciente presenta un riesgo del 0.9% de presentar complicaciones"
+    if Lee.total == 2:
+        Lee.eval = "El paciente presenta un riesgo del 6.6% de presentar complicaciones"
+    if Lee.total >= 3:
+        Lee.eval = "El paciente presenta un riesgo del 11% de presentar complicaciones"
+    val = 0
+    for x in P_class:
+        val = getattr(Padua,x)
+        if val != -1:
+           Padua.total = Padua.total + int(val)
+    if Padua.total >= 4:
+        Padua.eval = "El paciente tiene un riesgo incrementado de tromboembolismo venoso"
+    else:
+        Padua.eval = "El paciente no tiene un riesgo incrementado de tromboembolismo venoso"
+    return 0

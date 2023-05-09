@@ -8,8 +8,28 @@ body {
     background-color: #b2caef;
 }
 
-#file_title {
+#file_title, thead {
     color: #92aad0;
+}
+
+table {
+  width: 1200px;
+}
+
+.table-responsive {
+  max-height: 800px;
+}
+
+.table-border{
+  border: none;
+}
+
+td {
+  word-wrap:break-all;
+}
+
+.container-fluid {
+  justify-content: center;
 }
 
 #Procesando, #Time {
@@ -24,6 +44,10 @@ body {
 
 #submit_file {
     background-color: #92aad0;
+}
+
+.parr_size {
+  font-size: 80%;
 }
 
 @media (min-width: 550px) and (max-width: 750px) {

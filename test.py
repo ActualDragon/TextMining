@@ -1,9 +1,15 @@
-import os
-print(os.urandom(12).hex())
+"""
+term = "5 contracciones"
+for i in term.split():
+    try: #intentar convertir el token a float
+        cant = float(i)
+        break #salir del loop si i es la primera cadena que si es float
+    except:
+        continue
+print("Cantidad: " + str(cant)) #1.5
 
 
-
-"""import spacy
+import spacy
 nlp = spacy.load('es_core_news_sm')
 
 text = "El perro no corre por el parque"

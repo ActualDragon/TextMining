@@ -13,7 +13,7 @@ class Goldman_Index:
     IAM = 0 #Infarto agudo de miocardio
     IAM_p = -1
 
-    JVD = 0 #Distención de la vena yugular
+    JVD = ["",""] #Distención de la vena yugular o ruido cardíaco en S3
     JVD_p = -1
 
     EA = 0 #Estenosis aórtica
@@ -38,6 +38,8 @@ class Goldman_Index:
     ER_p = -1
 
     is_empty = 0
+    total = 0
+    eval = ""
 
 class Puntaje_Lee:
     OR = 0  #Cirugia de alto riesgo (intraperitoneal, intratorácica o suprainguinal vascular) [Valor encontrado]
@@ -59,6 +61,8 @@ class Puntaje_Lee:
     Cr_p = -1
 
     is_empty = 0
+    total = 0
+    eval = ""
 
 class Detsky_Index:
     IAM = 0 #Valor encontrado Infarto agudo de miocardio < o > 6 meses
@@ -95,6 +99,8 @@ class Detsky_Index:
     ER_p = -1
 
     is_empty = 0
+    total = 0
+    eval = ""
 
 class Puntaje_Padua:
     cancer = 0 #Valor encontrado Cancer activo -> metástasis y/o han pasado por quimioterapia o radioterapia en los últimos 6 meses
@@ -129,8 +135,12 @@ class Puntaje_Padua:
     TH_p = -1
 
     is_empty = 0
+    total = 0
+    eval = ""
 
-def MakeClass(type,list):
+# _.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.
+
+def MakeClass(type,list): #Almacenar los objetos para poder accesarlos desde las diversas páginas
     match list:
         case "G":
             Name = "Goldman"
@@ -152,7 +162,7 @@ def MakeClass(type,list):
         session[var] = val
     return 0
 
-def FindClass(type):
+def FindClass(type): #Acceder a los objetos guardados
     match type:
         case "Goldman":
             Object = Goldman_Index()
@@ -168,10 +178,10 @@ def FindClass(type):
             List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH"]
         case _:
             return 0
-    for x in range(len(List)):
-        var = type+"."+List[x]
+    for x in List:
+        var = type+"."+ x
         val = session.get(var)
-        setattr(Object, List[x], val)
+        setattr(Object, x, val)
     return Object
 
 # _.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.
@@ -222,31 +232,127 @@ def indices(name):
     Padua = Puntaje_Padua()
     f = fx.Read_File(name) #Leer los contenidos del archivo
     fx.Find_Edad(f,Goldman, Detsky, Padua)
-    fx.Find_IAM(f, Goldman, Detsky)
+    fx.Find_IAM(f, Goldman, Detsky, Padua)
     fx.Find_JVD(f, Goldman)
     fx.Find_EA(f, Goldman,Detsky)
     fx.Find_ECG(f, Goldman,Detsky)
     fx.Find_CAP(f,Detsky)
-    fx.Find_CVP(f,Goldman, Detsky)
-    fx.Find_estado(f, Goldman, Detsky)
+    fx.Find_CVP(f,Goldman)
+    fx.Find_estado(f, Goldman, Detsky, Padua)
     fx.Find_OR(f, Goldman, Lee)
-    fx.Find_CVP(f,Goldman, Detsky)
+    fx.Find_ER(f,Goldman, Detsky)
     MakeClass(Goldman,"G")
+    MakeClass(Lee,"L")
+    MakeClass(Detsky,"D")
+    MakeClass(Padua,"P")
     empty = fx.FindEmpty(Goldman, Lee, Detsky, Padua) #Determinar si hay atributos vacios
     if empty == 1:
         return render_template('validar.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si hay atributos vacios, redirigir a un form que pide los datos faltantes
     else:
         return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si no hay atributos vacios, redirigir a una pagina que imprime los resultados
 
-@app.route('/print', methods=['POST', 'GET'])
+@app.route('/print', methods=['GET','POST'])
 def print():
-    Goldman = FindClass("Goldman")
+    Goldman = FindClass("Goldman") #Recuperar los objetos
     Detsky = FindClass("Detsky")
     Lee = FindClass("Lee")
     Padua = FindClass("Padua")
-    if Goldman.edad_p == -1:
-        Goldman.edad = request.form.get('Edad_Value')
-        Goldman.edad_p = request.form.get('Edad_Point')
+    form_data = request.form
+    value = "No en el expediente. Seleccionado manualmente por el usuario"
+    if Goldman.edad_p == -1: #Edad
+        Goldman.edad = Detsky.edad = Padua.edad = value
+        Goldman.edad_p = Detsky.edad_p = Padua.edad_p = form_data["Goldman_edad"]
+        Padua.edad_p = int(int(Padua.edad_p)*(1/5))
+    if Goldman.IAM_p == -1: #IAM
+        Goldman.IAM = Detsky.IAM = value
+        points = form_data["Goldman_IAM"]
+        if points == 5: Detsky.IAM_p = points
+        else: Goldman.IAM_p = Detsky.IAM_p = points
+    if Goldman.JVD_p == -1: #JVD
+            Goldman.JVD[0] = value
+            Goldman.JVD_p = form_data["Goldman_JVD"]
+    if Goldman.EA_p == -1: #EA
+            Goldman.EA = Detsky.EA = value
+            Goldman.EA_p = Detsky.EA_p = form_data["Goldman_EA"]
+            Detsky.EA_p = int(int(Detsky.EA_p)*(20/3))
+    if Goldman.ECG_p == -1: #ECG (Goldman)
+            Goldman.ECG = value
+            Goldman.ECG_p = form_data["Goldman_ECG"]
+    if Detsky.ECG_p == -1: #ECG (Detsky)
+            Detsky.ECG = value
+            Detsky.ECG_p = form_data["Detsky_ECG"]
+    if Goldman.CVP_p == -1: #CVP
+            Goldman.CVP = value
+            Goldman.CVP_p = form_data["Goldman_CVP"]
+    if Goldman.estado_p == -1: #Estado general
+        Goldman.estado = Detsky.estado = value
+        Goldman.estado_p = Detsky.estado_p = form_data["Goldman_estado"]
+        Detsky.estado_p = int(int(Detsky.estado_p)*(5/3))
+    if Goldman.OR_p == -1: #Tipo de operación (Goldman)
+        Goldman.OR = value
+        Goldman.OR_p = form_data["Goldman_OR"]
+    if Lee.OR_p == -1: #Tipo de operación (Lee)
+        Lee.OR = value
+        Lee.OR_p = form_data["Lee_OR"]
+    if Goldman.ER_p == -1: #Cirugía de emergencia
+        Goldman.ER = Detsky.ER = value
+        Goldman.ER_p = Detsky.ER_p = form_data["Goldman_ER"]
+        Detsky.ER_P = int(int(Detsky.ER_p)*(5/2))
+    if Lee.isq_p == -1: #Enfermedad cardíaca isquémica
+        Lee.isq = value
+        Lee.isq_p = form_data["Lee_isq"]
+    if Lee.cong_p == -1: #Enfermedad cardíaca congestiva
+        Lee.cong = value
+        Lee.cong_p = form_data["Lee_cong"]
+    if Lee.CV_p == -1: #Enfermedad cerebrovascular
+        Lee.CV = value
+        Lee.CV_p = form_data["Lee_CV"]
+    if Lee.diab_p == -1: #Insulina para diabéticos
+        Lee.diab = value
+        Lee.diab_p = form_data["Lee_diab"]
+    if Lee.Cr_p == -1: #Creatinina preoperatoria
+        Lee.Cr = value
+        Lee.Cr_p = form_data["Lee_Cr"]
+    if Detsky.ang_p == -1: #Angina de pecho
+        Detsky.ang = value
+        Detsky.ang_p = form_data["Detsky_ang"]
+    if Detsky.angina_p == -1: #Angina inestable
+        Detsky.angina = value
+        Detsky.angina_p = form_data["Detsky_angina"]
+    if Detsky.edema_p == -1: #Edema pulmonar
+        Detsky.edema = value
+        Detsky.edema_p = form_data["Detsky_edema"]
+    if Detsky.CAP_p == -1: #CAP
+        Detsky.CAP = value
+        Detsky.CAP_p = form_data["Detsky_CAP"]
+    if Padua.cancer_p == -1: #Cáncer
+        Padua.cancer = value
+        Padua.cancer_p = form_data["Padua_cancer"]
+    if Padua.TEV_p == -1: #TEV
+        Padua.TEV = value
+        Padua.TEV_p = form_data["Padua_TEV"]
+    if Padua.mov_p == -1: #Movilidad reducida
+        Padua.mov = value
+        Padua.mov_p = form_data["Padua_mov"]
+    if Padua.trombo_p == -1: #Condición trombofília conocida
+        Padua.trombo = value
+        Padua.trombo_p = form_data["Padua_trombo"]
+    if Padua.OR_p == -1: #Trauma reciente o cirugía
+        Padua.OR = value
+        Padua.OR_p = form_data["Padua_OR"]
+    if Padua.falla_p == -1: #Falla cardíaca o respiratoria
+        Padua.falla = value
+        Padua.falla_p = form_data["Padua_falla"]
+    if Padua.IAM_p == -1: #Desorden reumatológico agudo o infarto agudo de miocardio
+        Padua.IAM = value
+        Padua.IAM_p = form_data["Padua_IAM"]
+    if Padua.BMI_p == -1: #Obesidad
+        Padua.BMI = value
+        Padua.BMI_p = form_data["Padua_BMI"]
+    if Padua.TH_p == -1: #Tratamiento hormonal
+        Padua.TH = value
+        Padua.TH_p = form_data["Padua_TH"]
+    fx.AddTotal(Goldman, Detsky, Lee, Padua) #Hacer la suma final
     return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua)
 
 
