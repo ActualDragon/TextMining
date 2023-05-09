@@ -241,6 +241,22 @@ def indices(name):
     fx.Find_estado(f, Goldman, Detsky, Padua)
     fx.Find_OR(f, Goldman, Lee)
     fx.Find_ER(f,Goldman, Detsky)
+    fx.Find_isq(f, Lee)
+    fx.Find_cong(f,Lee)
+    fx.Find_CV(f,Lee)
+    fx.Find_diab(f,Lee)
+    fx.Find_Cr(f,Lee)
+    fx.Find_ang(f,Detsky)
+    fx.Find_angina(f,Detsky)
+    fx.Find_edema(f,Detsky)
+    fx.Find_cancer(f,Padua)
+    fx.Find_TEV(f,Padua)
+    fx.Find_trombo(f,Padua)
+    fx.Find_trauma(f,Padua)
+    fx.Find_falla(f,Padua)
+    fx.Find_reuma(f,Padua)
+    fx.Find_BMI(f,Padua)
+    fx.Find_TH(f,Padua)
     MakeClass(Goldman,"G")
     MakeClass(Lee,"L")
     MakeClass(Detsky,"D")
@@ -249,6 +265,7 @@ def indices(name):
     if empty == 1:
         return render_template('validar.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si hay atributos vacios, redirigir a un form que pide los datos faltantes
     else:
+        fx.AddTotal(Goldman, Detsky, Lee, Padua) #Hacer la suma final
         return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si no hay atributos vacios, redirigir a una pagina que imprime los resultados
 
 @app.route('/print', methods=['GET','POST'])
