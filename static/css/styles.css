@@ -42,7 +42,8 @@ td {
     color: #45526e;
 }
 
-#submit_file {
+#submit_file, #button-style,
+#inicio-style {
     background-color: #92aad0;
 }
 

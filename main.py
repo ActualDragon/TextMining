@@ -375,8 +375,8 @@ def print():
 
 #Funcion main driver
 if __name__ == '__main__':
-    webbrowser.open_new("http://127.0.0.1:5000") #Abrir la pagina principal en el navegador cuando se corre la app
-    app.run()
-    #ui.run()
+    #webbrowser.open_new("http://127.0.0.1:5000") Abrir la pagina principal en el navegador cuando se corre la app
+    #app.run()
+    ui.run()
 
 #https://medium.com/@fareedkhandev/create-desktop-application-using-flask-framework-ee4386a583e9
