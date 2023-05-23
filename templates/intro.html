@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+
+    <title>Instructivo</title>
+  </head>
+  <body>
+    <header>
+    </header>
+    <div class="p-5 text-center" id="MainHeader">
+        <h1 class="mb-3">¡Bienvenido!</h1>
+        <h4 class="mb-3">Sistema de análisis de expedientes para la determinación de escalas de riesgo preoperatorio</h4>
+      </div>
+       <section class="intro">
+         <div class="bg-image h-500">
+           <div class="mask d-flex align-items-center h-100">
+             <div class="container">
+               <div class="row d-flex justify-content-center align-items-center">
+                 <div class="col-12 col-lg-9 col-xl-8">
+                   <div class="card" style="border-radius: 1rem;">
+                     <div class="row g-0">
+                        <div class="col-md-4 d-none d-md-block">
+                           <img src="{{ url_for('static', filename='images/icon.jpeg') }}" class="img-fluid"/>
+                         </div>
+                       <div class="col-md-8 d-flex align-items-center">
+                         <div class="card-body py-5 px-4 p-md-5">
+
+                            <div class="accordion" id="Instructivo">
+                                <div class="accordion-item">
+                                  <h2 class="accordion-header" id="Header1">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#Panel1" aria-expanded="true" aria-controls="Panel1">
+                                        Sobre el Sistema
+                                    </button>
+                                  </h2>
+                                  <div id="Panel1" class="accordion-collapse collapse show" aria-labelledby="Header1" data-bs-parent="#Instructivo">
+                                    <div class="accordion-body">
+                                        <strong>¡Le damos al bienvenida!</strong> Esta herramienta utiliza minería de textos y procesamiento de lenguaje natural para analizar el expediente de su paciente e indicar la probabilidad que presenta de desarrollar complicaciones en su cirugía. Para determinar dicho riesgo, utilizamos diversos índices reconocidos en el ámbito médico para evaluar y determinar el nivel de riesgo de los pacientes antes de una cirugía. Estos son el Índice de Goldman, el Índice de Detsky, el Puntaje de Lee y el Puntaje Predictivo de Padua. Estas escalas permiten una evaluación integral y precisa, brindando información valiosa de forma confiable y rápida para asistir en la toma de decisiones médicas.
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="Header2">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#Panel2" aria-expanded="true" aria-controls="Panel2">
+                                        Instrucciones Generales
+                                      </button>
+                                    </h2>
+                                    <div id="Panel2" class="accordion-collapse collapse" aria-labelledby="Header2" data-bs-parent="#Instructivo">
+                                      <div class="accordion-body">
+                                        <strong>Para utilizar nuestro sistema, sigue estas instrucciones generales:</strong>
+                                        <ol>
+                                          <li>En la siguiente página suba el archivo Word que contiene el expediente del paciente.</li>
+                                          <li>Nuestro sistema analizará automáticamente el expediente en busca de los criterios de los índices establecidos.</li>
+                                          <li>Si alguno de los criterios no se detecta en el expediente, se solicitará que lo seleccione manualmente.</li>
+                                          <li>Una vez revisado y confirmado que la información proporcionada sea correcta, envíe el formulario.</li>
+                                          <li>Se desplegarán cuatro tablas distintas, correspondientes a cada uno de los diferentes índices utilizados.</li>
+                                          <ul>
+                                              <li>En cada tabla se mostrará el criterio buscado, el puntaje asignado según lo encontrado y el texto específico encontrado en el expediente.</li>
+                                              <li>Al final de cada tabla estará el puntaje total y el riesgo asociado a dicho puntaje.</li>
+                                          </ul>
+                                        </ol>
+                                      </div>
+                                    </div>
+                                  </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="Header3">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#Panel3" aria-expanded="true" aria-controls="Panel3">
+                                        Requerimientos y Limitaciones del Sistema
+                                      </button>
+                                    </h2>
+                                    <div id="Panel3" class="accordion-collapse collapse" aria-labelledby="Header3" data-bs-parent="#Instructivo">
+                                      <div class="accordion-body">
+                                        <strong>Esta aplicación de escritorio cuenta con ciertos requerimientos que aseguran su funcionamiento óptimo.</strong> Es necesaria una conexión a internet, pues la interfaz gráfica lo requiere para aprovechar todas las funcionalidades. Además, por el momento solamente se permiten expedientes con extensiones .doc y .dox, de un tamaño máximo de 1MB, garantizando así la compatibilidad y el procesamiento adecuado del documento.
+                                        Estos requisitos aseguran una experiencia fluida y eficiente al utilizar la aplicación. Adicionalmente, nuestro sistema actualmente no cuenta con la capacidad de procesar palabras con errores ortográficos, lo que podría ocasionar que no se encuentren criterios aunque estos estén presentes.
+                                        Aunque trabajamos constantemente para mejorar la precisión, es importante estar conscientes de que el sistema puede tener errores ocasionales y no detectar algún criterio presente. Sin embargo, es relevante destacar que, de acuerdo con las pruebas realizadas, el sistema muestra resultados acertados en un 93% de los expedientes analizados. No obstante, recomendamos precaución y consideración a la hora de interpretar los resultados.
+                                      </div>
+                                    </div>
+                                  </div>
+                                <div class="accordion-item">
+                                  <h2 class="accordion-header" id="Header4">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#Panel4" aria-expanded="true" aria-controls="Panel4">
+                                        Requerimientos del Expediente
+                                    </button>
+                                  </h2>
+                                  <div id="Panel4" class="accordion-collapse collapse" aria-labelledby="Header4" data-bs-parent="#Instructivo">
+                                    <div class="accordion-body">
+                                        <strong>Es importante contar con un formato de expediente estandarizado para garantizar un procesamiento adecuado.</strong> El archivo debe ser un documento con extensión .doc o .docx, y no debe exceder 1MB de tamaño. Además, es fundamental asegurarse de que la estructura del archivo sea consistente. La edad del paciente debe estar indicada antes del término "antecedentes" y es necesario incluir dicho término si se desea conocer la edad. El resto de la información médica relevante debe ubicarse después del término "antecedentes".
+                                        Cumplir con estos requisitos permitirá un análisis más preciso y completo del expediente. Nuestra recomendación es verificar la correcta estructura del archivo antes de cargarlo en el sistema para reducir la probabilidad de error.
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                         </div>
+                     </div>
+                   </div>
+                   <div class="ps-3">* Si tiene alguna duda o necesita más información, puede consultar el manual de usuario. De igual forma puede ponerse en contacto con el proovedor de la aplicación.</div>
+                   <span class="pt-3 ps-3 pe-3">
+                    <a class="btn btn-rounded btn-primary pe-3 position-absolute bottom-0 end-0" role="button" id = "inicio-style" href = "/home">Continuar</a></span></div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+         <!-- The Modal -->
+        <div id="Load" class="modal">
+
+          <!-- Modal content -->
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="loader"></div>
+            <h4 class="fw-bold mb-4" id="Procesando">Procesando el expediente</h4>
+            <p class="fw-bold mb-4" id="Time">Esto puede tomar un momento</p>
+          </div>
+        </div>
+
+       </section>
+
+
+    <footer class="panel-footer">
+    </footer>
+
+    <!-- Bootstrap JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+    <script>
+      //Función asincrónica que toma una URL como parámetro, realiza una solicitud GET y devuelve los datos de respuesta en formato JSON
+      async function getRequest(url = '') {
+          const response = await fetch(url, {
+              method: 'GET',
+              cache: 'no-cache'
+          })
+          return response.json()
+      }
+      //Informa a flaskwebgui que mantenga el servidor en ejecución. Sin esto, el servidor se cierra después de unos segundos.
+      document.addEventListener('DOMContentLoaded', function () {
+          let url = document.location
+          let route = "/flaskwebgui-keep-server-alive"
+          let interval_request = 5 * 1000 //maybe cambiar a 3 seg
+          function keep_alive_server() {
+              getRequest(url + route)
+                  .then(data => console.log(data))
+          }
+          setInterval(keep_alive_server, interval_request)()
+      })
+  </script>
+  </body>
+</html>

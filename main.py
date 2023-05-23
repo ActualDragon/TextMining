@@ -198,6 +198,10 @@ ui = FlaskUI(app=app, server="flask", port=5000)
 
 #Generar la home page
 @app.route('/')
+def instructions():
+    return render_template('intro.html')
+
+@app.route('/home')
 def load():
     #Eliminar todos las copias temporales de los expedientes que se hayan quedado almacenados si la aplicación no se cerró adecuadamente
     basedir = os.path.abspath(os.path.dirname(__file__)) #Obtener el directorio actual
