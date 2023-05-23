@@ -4,9 +4,11 @@ import spacy #Procesamiento de lenguaje natural
 import os #usar funcionalidades dependientes del sistema operativo
 
 nlp = spacy.load('es_core_news_sm') #Cargar el modelo en español de spaCy
+nlp.Defaults.stop_words -= {"sin", "dia", "dias", "hoy"} #Conservar algunas palabras vacías necesarias para el procesamiento
+stopwords = nlp.Defaults.stop_words
 
 class Search:
-    Term = 0
+    Term = "0"
     Line = -1
 
 # _.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.
@@ -46,26 +48,33 @@ def Read_File(name):
         sentences = x.split(". ")
         for i in sentences:
             i = i.lower()
-            i = i.replace("\\", "/").replace('"','\\"').replace("'","\'") .replace("-"," ")#Escapar caracteres especiales
+            i = i.replace("\\", "/").replace('"','\\"').replace("'","\'").replace("-"," ")#Escapar caracteres especiales
             i = i.replace('\n', '').replace('\r', '') #Eliminar saltos de linea y el retorno de carro
             i = i.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u") #Eliminar acentos para facilitar procesamiento
-            i = i.replace("meses", "mes").replace("dias", "dia").replace("semanas", "semana").replace("años", "año")
             text.append(i)
     return text
+
+#Procesar el txto
+def Process_Text(text):
+    lemma_sentences = []  # Utilizamos un conjunto para evitar duplicados
+    for sentence in text:
+        doc = nlp(sentence)#Procesar el texto con spacy
+        lemma_sentence = ' '.join(token.lemma_ for token in doc if (token.lemma_ not in stopwords and token.lemma_ != "de" and token.lemma_ != "el")) #Quitar palabras vacías (de, por, en, la, etc) y pasar la palabra a su forma básica (sin congujar)
+        lemma_sentence = lemma_sentence.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("-"," ") #Eliminar acentos para facilitar procesamiento
+        lemma_sentences.append(lemma_sentence)
+    f = lemma_sentences  # Convertimos el conjunto a lista
+    print(f)
+    return f
 
 #Encontrar coincidencias en el texto
 def Find_Syn(terms, f):
     IAM = Search()
     for j, text in enumerate(f): #Ir recorriendo la lista de términos para buscar coincidencias en el texto
-        doc = nlp(text) #Procesar el texto con spacy
-        filter = [token.text for token in doc if not token.is_stop or token.text == 'no'] #Quitar palabras vacías (de, por, en, la, etc) pero conservar "no"
-        sentence = ' '.join(filter) #Reformar la oración sin las palabras vacías
-        for i, term in enumerate(terms):
-            if term in sentence: #Si encuentra coincidencias, agregarla al objeto
+        for term in terms:
+            if term in text: #Si encuentra coincidencias, agregarla al objeto
                 IAM.Term = text #El término encontrado en el texto
                 IAM.Line = j #Número de elemento de la lista
                 break
-
     return IAM
 
 #Determinar cúando presentó la condición
@@ -82,7 +91,7 @@ def Find_Time(f,x):
 def Find_Edad(f, Goldman, Detsky, Padua):
     edad = []
     #De acuerdo con el analisis de la estructura de los expedientes, la edad siempre se encuentra antes del tag "ANTECEDENTES"
-    j = next((x for x, item in enumerate(f) if "antecedentes" in item), None)
+    j = next((x for x, item in enumerate(f) if "antecedente" in item), None)
     if j is not None: #Encontrar el elemento de la lista donde empiezan los antecedentes (pues la edad va a estar antes)
         for x in range(j):
             doc = nlp(f[x])#Procesar el texto con spaCy
@@ -115,12 +124,16 @@ def Find_Cant(term):
     print("Cantidad: " + str(cant))
     return cant
 
+#Las funciones Find_ contienen un arreglo llamado "terms" o "terms1", "terms2", etc.
+#En estos arreglos se encuentran los "diccionarios" de posibles formas en las que podemos encontrar los criterioss en el expediente
+#Puede parecer que estos tienen errores ortográficos o de sintaxis, pero es porque pasaron por el mismo proceso de tokenización, procesamiento y lemmatización que el expediente para incrementar la probabilidad de encontrar una coincidencia
+
 #Determinar si ha habido infarto agudo de miocardio
-def Find_IAM(f, Goldman, Detsky, Padua):
-    terms = ['infarto agudo miocardio', ' im ', ' ima ', ' iam ', 'infarto cardiaco', 'ataque cardiaco', 'ataque corazon', 'infarto miocardio', 'infarto miocardico', 'sindrome isquemico coronario agudo', ' sica ', 'sindrome coronario agudo', 'evento coronario agudo', 'insuficiencia coronaria aguda', 'evento coronario isquemico agudo', 'necrosis miocardica aguda', 'crisis coronaria aguda', 'sindrome isquemia miocardica aguda', 'evento coronario isquemico agudo']
+def Find_IAM(f, og, Goldman, Detsky, Padua):
+    terms =[' ima ', 'sindromar isquemico coronario agudo', 'sindromar coronario agudo', 'insuficiencia coronario agudo', 'crisis coronario agudo', 'necrosis miocardico agudo', 'evento coronario agudo', 'ataque corazon', ' sica ', 'infarto cardiaco', 'sindromar isquemio miocardico agudo', ' iam ', 'evento coronario isquemico agudo', 'ataque cardiaco', 'infarto miocardico', 'infarto miocardio', 'infarto agudo miocardio', ' im ']
     text = Find_Syn(terms, f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.IAM = Detsky.IAM = Padua.IAM = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Goldman.IAM = Detsky.IAM = Padua.IAM = og[text.Line]
         Padua.IAM_p = 1
         time = Find_Time(f, text)
         if time != 0:
@@ -139,347 +152,351 @@ def Find_IAM(f, Goldman, Detsky, Padua):
         else:
             Detsky.IAM_p = 6
             Goldman.IAM_p = 0
-    print("IAM: %s" % text.Term)
-    print("Detsky: %d" % Detsky.IAM_p)
+    print("IAM: %s" % Padua.IAM)
     return 0
 
 
 #Determinar si hay distensión de la vena yugular o ruido cardíaco en S3
-def Find_JVD(f, Goldman):
-    terms1 = ['pletora yugular', 'ingurgitacion yugular', ' JVD ', 'distension vena yugular', 'distension yugular', 'pletora vena yugular', 'ingurgitacion vena yugular',  'signo de kussmaul', 'triada de beck', 'yugular prominente', 'aumento presion venosa yugular', 'vena yugular externa dilatada', 'yugular ingurgitada', 'turgencia vena yugular', 'turgencia yugular', 'reflujo hepatoyugular']
-    terms2 = ['ruido cardiaco s3', 'roce pericardico s3', 'sonido cardiaco s3', 'tono cardiaco s3', 'galope protodiastolico', 'tercer ruido cardiaco', 'ruido cardiaco tercera fase', 'ruido llenado ventricular rapido', 'tercer componente ruido cardiaco','galope ventricular protodiastolico', 'sonido galope ventricular', 'ruido llenado protodiastolico', 'tercer ruido']
+def Find_JVD(f, og, Goldman):
+    terms1 = ['ingurgitacion vena yugular', 'aumento presion venós yugular', 'pletoro yugular', 'distension vena yugular', 'distension yugular', 'signo de kussmaul', 'reflujo hepatoyugular', 'turgencia yugular', 'vena yugular externo dilatado', 'turgencia vena yugular', 'yugular prominente', 'pletoro vena yugular', ' JVD ', 'yugular ingurgitado', 'triado de beck', 'ingurgitacion yugular']
+    terms2 = ['ruido cardiaco s3', 'sonido cardiaco s3', 'rocir pericardico s3', 'galope ventricular protodiastolico', 'galope protodiastolico', 'ruido llenado protodiastolico', ' s3 ', 'tercer ruido', 'tercer ruido cardiaco', 'tono cardiaco s3', 'ruido cardiaco tercero fase', 'sonido galope ventricular', 'ruido llenado ventricular rapido', 'tercer componente ruido cardiaco', 'soplo']
     text1 = Find_Syn(terms1, f)
     text2 = Find_Syn(terms2, f)
-    if text1.Term != 0 or text2.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.JVD[0] = text1.Term
-        Goldman.JVD[1] = text2.Term
+    if text1.Term != "0": #Determinar si se encontró una coincidencia
+        Goldman.JVD = og[text1.Line]
         Goldman.JVD_p = 11
-    print("JVD: %s" % text1.Term)
-    print("RS3: %s" % text2.Term)
+    elif text2.Term != "0":
+        Goldman.JVD = og[text2.Line]
+        Goldman.JVD_p = 11
+    if " sin " in text1.Term or " sin " in text2.Term:
+        Goldman.JVD_p = 0
+    print("JVD: %s" % Goldman.JVD)
     return 0
 
 
 #Determinar si hay estenosis aórtica
-def Find_EA(f, Goldman, Detsky):
-    terms = ['valvulopatia aortica', 'estenosis valvular aortica', ' ea ', ' eao ', 'sorta estenotica', 'aortoestenosis', 'estenosis aorta', 'estenosis aortica', 'estenosis valvular aortica', 'obstruccion aortica']
+def Find_EA(f, og, Goldman, Detsky):
+    terms = ['estenosis aorto', 'sortar estenotico', 'valvulopatia aortico', '  eao', 'estenosis valvular aortico', 'estenosis aortico', 'aortoestenosis', 'obstruccion aortico', ' ear ',]
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.EA = Detsky.EA = text.Term
-        Goldman.EA_p = 3
-        Detsky.EA_p = 20
-    print("EA: %s", text.Term)
+    if text.Term != "0" : #Determinar si se encontró una coincidencia
+        Goldman.EA = Detsky.EA = og[text.Line]
+        if " sin " in text.Term:
+            Goldman.EA_p = Detsky.EA_p = 0
+        else:
+            Goldman.EA_p = 3
+            Detsky.EA_p = 20
+    print("EA: %s", Goldman.EA)
     return 0
 
-#Determinar si hay ritmo distinto del sinusal
-def Find_ECG(f, Goldman, Detsky):
-    terms1 = ['ritmo no sinusal', 'taquiarritmia', 'taquicardia', 'flutter auricular', 'fibrilacion', 'bradicardia', 'bradiarritmia', 'paro sinusal', 'bloqueo sino-auricular', 'bloqueo sinoauricular', 'bloqueo sino auricular', 'bloqueo av', 'mobitz ', 'wenckebach', 'ritmo distinto sinusal', 'arritmia', 'ritmo cardiaco anormal', 'ritmo cardiaco no sinusal', 'bloqueo auriculoventricular', 'bloqueo de rama', 'ritmo de escape', 'extrasistoles']
-    terms2 = ['contraccion auricular prematura', 'contracciones auriculares prematuras', 'latido auricular prematuro', 'sistole prematura', 'extrasistoles auriculares', ' cap ', 'arritmia auricular', 'ritmo auricular prematuro', 'complejo auricular prematuro', 'latidos prematuros auriculares', 'extrasistole auricular', 'palpitaciones auriculares', 'palpitacion auricular', 'arritmia auricular']
+#Determinar si hay ritmo distinto del sinusal o extrasistoles auriculares
+def Find_ECG(f, og, Goldman, Detsky):
+    terms1 = ['wenckebach', 'flutter auricular', 'arritmia', 'ritmo no sinusal', 'bloqueo av', 'bloqueo de rama', 'ritmo de escape', 'paro sinusal', 'bloqueo sino auricular', 'fibrilacion', 'ritmo cardiaco no sinusal', 'taquiarritmia', 'bradicardio', 'bloqueo sino-auricular', 'bloqueo sinoauricular', 'bradiarritmio', 'ritmo cardiaco anormal', 'taquicardio', 'mobitz', 'ritmo distinto sinusal', 'extrasistol', 'bloqueo auriculoventricular']
+    terms2 = ['contraccion auricular prematuro', 'latido auricular prematuro', '  cap', 'arritmia auricular', 'contraccion auriculares prematuro', 'ritmo auricular prematuro', 'palpitacion auricular', 'extrasistol auricular', 'extrasisto el auricular', 'sisto el prematura', 'complejo auricular prematuro', 'latido prematuro auricular']
+    antiterm = ['ritmo cardiaco regular', 'ritmo cardíaco regular sinusal', 'ritmo regular sinusal', 'ritmo sinusal regular', 'ritmo regular cardiaco sinusal', 'ritmo cardiaco normal', 'ritmo cardiaco sinusal normal', 'ritmo sinusal normal']
     text1 = Find_Syn(terms1, f)
     text2 = Find_Syn(terms2, f)
-    if text1.Term != 0 or text2.Term != 0:
-        if text1.Term != 0:
-            Detsky.ECG = text1.Term
-        else:
-            Detsky.ECG = text2.Term
-        Detsky.ECG_p = 5
-        Goldman.ECG_p = 7
-    if text1.Term != 0:
-        Goldman.ECG = text1.Term
-    elif text2.Term != 0:
-        Goldman.ECG = text2.Term
-    print("ritmo sinusal:", text1.Term)
-    print("extrasistoles:", text2.Term)
+    antitext = Find_Syn(antiterm, f)
+    if text1.Term != "0" or text2.Term != "0":
+        if text1.Term != "0":
+            Goldman.ECG = Detsky.ECG = og[text1.Line]
+            Detsky.ECG_p = 5
+            Goldman.ECG_p = 7
+        if text2.Term != "0":
+            Detsky.ECG = og[text2.Line]
+            Detsky.ECG_p = 5
+    elif antitext.Term != "0":
+            Goldman.ECG = Detsky.ECG = og[antitext.Line]
+            Detsky.ECG_p = Goldman.ECG_p = 0
+    print("ritmo sinusal:", Goldman.ECG)
+    print("extrasistoles:", Detsky.ECG)
     return 0
 
 #Determinar si hay contracciones auriculares prematuras
-def Find_CAP(f,Detsky):
-    terms = ['contraccion auricular prematura', 'contracciones auriculares prematuras', 'latido auricular prematuro', 'sistole prematura', 'extrasistoles auriculares', ' cap ', 'arritmia auricular']
+def Find_CAP(f,og,Goldman,Detsky):
+    terms = ['contraccion auricular prematuro', 'contraccion auriculares prematuro', '  cap', 'sisto el prematura', 'arritmia auricular', 'latido auricular prematuro', 'extrasistol auricular']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Detsky.CAP = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Detsky.CAP = Goldman.ECG = og[text.Line]
+        Goldman.ECG_p = 7
         x = Find_Cant(text.Term)
         if x >= 5: Detsky.CAP_p = 5
         else: Detsky.CAP_p = 0
-    print("CAP 2: %s", text.Term)
+    if " sin " in text.Term:
+        Goldman.ECG = Detsky.CAP_p = 0
+    print("CAP 2: %s", Detsky.CAP)
     return 0
 
 #Determinar si hay contracciones ventriculares prematuras
-def Find_CVP(f,Goldman):
-    terms = ['contraccion ventricular prematura', 'contracciones ventriculares prematuras', 'latido ventricular prematuro', 'extrasistoles ventriculares', 'arritmia ventricular']
+def Find_CVP(f,og,Goldman):
+    terms = ['contraccion ventricular prematuro', 'contraccion ventricular prematura', 'arritmio ventricular', 'latido ventricular prematuro', 'extrasistol ventricular']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        x = Find_Cant(text.Term)
-        if x >= 5: #Determinar si ha habido >5 CVP/min
-            Goldman.CVP = text.Term
-            Goldman.CVP_p = 5
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        if " sin " in text.Term:
+            Goldman.CVP_p = 0
+        else:
+            Goldman.CVP = og[text.Line]
+            x = Find_Cant(text.Term)
+            if x >= 5: #Determinar si ha habido >5 CVP/min
+                Goldman.CVP_p = 5
     print("CVP: %s", Goldman.CVP)
     return 0
 
 
 #Determinar estado general
-def Find_estado(f, Goldman, Detsky, Padua):
+def Find_estado(f, og, Goldman, Detsky, Padua):
     find = ""
-    terms1 = ['pao2', 'presion parcial oxigeno', 'presion oxigeno', 'po2', 'presion arterial oxigeno', 'tension parcial oxigeno ', 'nivel oxigeno'] #Presión parcial de O2
-    terms2 = ['cirrosis', 'fibrosis hepatica', 'esteatosis hepatica', 'hepatitis', 'hipertension portal', 'ascitis', 'hiperbilirrubinemia', 'hepatomegalia', 'elevacion transaminasas', 'pruebas funcion hepatica alteradas', 'varices esofagicas', 'cabeza medusa', 'caput medusae', 'tiempos coagulacion alterados', 'colangitis biliar', 'encefalopatia hepatica', 'elastografia hepatica', 'hepatopatia', 'ictericia', 'cancer higado', 'cancer hepatico','enfermedad hepatica', 'daño hepatico cronico',  'insuficiencia hepatica cronica', 'niveles elevados enzimas hepaticas', 'bilirrubina elevada', 'albumina baja', 'tiempo protrombina prolongado.', 'trombocitopenia', 'prurito', 'hepatomegalia'] #Enfermedad hepática
-    terms3 = ['pco2', 'p co2', 'presion parcial co2', 'tension co2', 'presion parcial dioxido carbono', 'co2 parcial'] #Presion parcial de CO2
-    terms4 = ['potasio serico', 'concentración potasio', 'niveles potasio', 'nivel potasio', 'kalemia', 'potasio plasmatico', 'K serico'] #Niveles de K
-    terms5 = ['nivel bicarbonato sangre', 'bicarbonato serico', 'co2 serico', 'hco3 serico', 'concentracion bicarbonato sangre'] #Niveles de bicarbonato
-    terms6 =  ['nitrogeno ureico sangre', ' bun ', 'urea sangre', 'azotemia', 'concentracion nitrogeno ureico', ' nus  '] #Nitrogeno ureico en sangre
-    terms7 = ['creatinina sangre', 'creatinina serica', 'creatinina plasmatica', 'creatinina suero', 'concentracion creatinina', 'creatinina'] #Creatinina
-    terms8 = ['transaminasa glutamico oxalacetica elevada', 'elevacion tgo', 'tgo alto', 'aspartato transaminasa alta', 'elevacion ast', 'ast elevada', 'niveles elevados tgo', 'aumento tgo', 'enzimas hepaticas elevadas', 'niveles elevados transaminasa glutamico oxalacetica', 'aumento transaminasa glutamico oxalacetica', 'transaminasa glutamico oxalacetica alta', 'valores elevados transaminasa glutamico oxalacetica', 'anormalidad transaminasa glutamico oxalacetica', 'niveles anormales transaminasa glutamico oxalacetica', 'transaminasa glutamico oxalacetica fuera rango', 'sgot anormal', 'sgot elevado'] #SGOT
-    terms9 = ['postrada', 'inmovilizada', 'encamada', 'sedentaria', 'inactiva','postrado', 'inmovilizado', 'encamado', 'sedentario', 'inactivo' ] #Paciente postrado
+    terms1 = ['presion arterial oxigeno', 'presion oxigeno', 'tension parcial oxigeno', 'presion parcial oxigeno', 'nivel oxigeno', ' pao2 ', ' po2 '] #Presión parcial de O2
+    terms2 = ['cancer hepatico', 'daño hepatico cronico', 'prurito', 'insuficiencia hepatico cronico', 'prueba funcion hepatico alterado', 'colangitis biliar', 'cabeza medusar', 'elastografia hepatico', 'esteatosis hepatico', 'hiperbilirrubinemiar', 'variz esofagica', 'elevacion transaminasas', 'enfermedad hepatico', 'fibrosis hepatico', 'caput medusae', 'bilirrubin elevado', 'encefalopatia hepatico', 'trombocitopenia', 'cirrosis', 'asciti', 'nivel elevado enzima hepatica', 'tiempo coagulacion alterado', 'hepatomegalia', 'ictericia', 'hepatopatia', 'hepatitis', 'cancer higado', 'hipertension portal', 'albuminar bajo', 'tiempo protrombinar prolongado'] #Enfermedad hepática
+    terms3 = ['presion parcial co2', 'p co2', 'tension co2', 'presion parcial dioxido carbono', 'co2 parcial', 'pco2', 'hipocarbiar', 'hipocapneo', 'hipocapnia'] #Presion parcial de CO2
+    terms4 = ['concentracion potasio', 'potasio serico', 'kalemia', 'k serico', 'nivel potasio', 'potasio plasmatico'] #Niveles de K
+    terms5 = ['hco3 serico', 'nivel bicarbonato sangre', 'bicarbonato serico', 'concentracion bicarbonato sangre', 'co2 serico'] #Niveles de bicarbonato
+    terms6 = [' nus ', 'nitrogeno ureico sangre', 'urea sangre', '  bun', 'concentracion nitrogeno ureico', 'azotemiar'] #Nitrogeno ureico en sangre
+    terms7 = ['creatinina serico', 'creatinina plasmatico', 'concentracion creatinin', 'creatininar', 'creatinina sangre', 'creatinina suero'] #Creatinina
+    terms8 = ['elevacion tgo', 'nivel anormal transaminasar glutamico oxalacetico', 'tgo alto', 'enzima hepatica elevado', 'ast elevado', 'nivel elevado transaminasa glutamico oxalacetico', 'transaminasa glutamico oxalacetico alto', 'anormalidad transaminas glutamico oxalacetico', 'sgot elevado', 'elevacion ast', 'aumento transaminasa glutamico oxalacetico', 'aspartato transaminasa alto', 'transaminasa glutamico oxalacetico elevado', 'aumento tgo', 'sgot anormal', 'nivel elevado tgo', 'valor elevado transaminasa glutamico oxalacetico', 'transaminasa glutamico oxalacetico ser rango'] #SGOT
+    terms9 = ['inactivo', 'encamado', 'postrado', 'inmovilizado', 'reposo'] #Paciente postrado
     text_terms = [Find_Syn(terms, f) for terms in [terms1, terms2, terms3, terms4, terms5, terms6, terms7, terms8, terms9]]
-    cant_terms = [0] * 7
-    for i, text in enumerate(text_terms[:7]):
-        if text.Term != 0:
+    cant_terms = [0] * 9
+    for i, text in enumerate(text_terms):
+        if text.Term != "0":
+            find += f" {og[text.Line]}"
             cant_terms[i] = Find_Cant(text.Term)
-            find += f" {cant_terms[i]} {text.Term}"
-    text8 = text_terms[7]
-    text9 = text_terms[8]
-    if text8.Term != 0:
-        find += f" {text8.Term}"
-    if text9.Term != 0:
-        find += f" {text9.Term}"
-        Padua.mov = text9.Term
+    if text_terms[8].Term != "0":
+        Padua.mov = og[text_terms[8].Line]
         Padua.mov_p = 3
-    if any(text.Term != 0 for text in text_terms):
-        Goldman.estado = Detsky.estado = find
-        if cant_terms[0] <= 60 or text_terms[1].Term != 0 or cant_terms[2] > 50 or cant_terms[3] < 3 or cant_terms[4] < 20 or cant_terms[5] > 50 or cant_terms[6] > 3 or text8.Term != 0 or text9.Term != 0:
-            Goldman.estado_p = 3
-            Detsky.estado_p = 5
+    Goldman.estado = Detsky.estado = find
+    if cant_terms[0] <= 60 or text_terms[1].Term != "0" or cant_terms[2] > 50 or cant_terms[3] < 3 or cant_terms[4] < 20 or cant_terms[5] > 50 or cant_terms[6] > 3 or text_terms[7].Term != "0" or text_terms[8].Term != "0":
+        Goldman.estado_p = 3
+        Detsky.estado_p = 5
     print("estado:", Goldman.estado)
     return 0
 
 #Determinar el tipo de cirugía
-def Find_OR(f, Goldman, Lee):
-    terms = {
-        'intraperitoneal': ['laparoscopia', 'laparotomia', 'laparotomia exploratoria', 'cirugia abierta de abdomen', 'colecistectomia', 'apendicectomia', 'reseccion intestinal', 'gastrectomia', 'hemicolectomia', 'cirugia intraperitoneal', 'cirugia abdomen', 'cirugia abdominal', 'reseccion intestinal', 'colectomia', 'gastrectomia', 'herniorrafia', 'histerectomia', 'ooforectomia', 'nefrectomia', 'quistectomia ovarica', 'esplenectomia', 'pancreatectomia'],
-        'intratoracica': ['cirugia toracica', 'cirugia de torax', 'cirugia intratoracica', 'toracotomia', 'toracoscopia', 'reseccion pulmonar', 'lobectomia', 'neumonectomia', 'pleurectomia', 'pleurodesis', 'timectomia', 'mediastinoscopia', 'mediastinotomia', 'drenaje toracico', 'cirugia esofago toracico', 'cirugia pared toracica', 'cirugia aorta toracica'],
-        'aortica': ['cirugia aortica', 'cirugia aorta', 'cirugia reemplazo aorta', 'cirugia aneurisma aortico', 'cirugia diseccion aortica', 'cirugia valvula aortica', 'cirugia raiz aortica', 'endoprotesis aortica', 'revascularizacion aortica', 'aneurismectomia', 'endarterectomia aortica', 'colocacion stent aortico', 'reparacion aorta', 'transposicion aortica', 'anastomosis aortica', 'arterioplastica aortica', 'bypass aortico'],
-        'suprainguinal': ['cirugia suprainguinal vascular', 'cirugia vascular suprainguinal', 'revascularizacion femoral', 'bypass femoral', 'bypass iliaco femoral', 'bypass aortofemoral', 'bypass femoro popliteo', 'endarterectomima femoral', 'endarterectomia iliaca', 'angioplastia femoral', 'trombectomia femoral', 'arterioplastia femoral', 'arterioplastia iliaca', 'stent femoral', 'stent iliaco', 'diseccion aneurisma iliaco', 'diseccion aneurisma femoral', 'reseccion aneurisma iliaco', 'reseccion aneurisma femoral',' ligadura arterial femoral', 'ligadura arterial iliaca']
-    }
-    text = {}
-    for key, value in terms.items():
-        text[key] = Find_Syn(value, f)
-    if text['intraperitoneal'].Term != 0 or text['intratoracica'].Term != 0 or text['aortica'].Term != 0: #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
-        if  text['intraperitoneal'].Term != 0:
-            Goldman.OR = text['intraperitoneal'].Term
-        if  text['intratoracica'].Term != 0:
-            Goldman.OR = text['intratoracica'].Term
-        if  text['aortica'].Term != 0:
-            Goldman.OR = text['aortica'].Term
+def Find_OR(f, og, Goldman, Lee):
+    terms1 =['cirugia abdominal', 'pancreatectomia', 'nefrectomia', 'quistectomia ovarico', 'hemicolectomia', 'gastrectomiar', 'laparotomia exploratorio', 'cirugia abdomen', 'apendicectomio', 'histerectomiar', 'reseccion intestinal', 'colectomia', 'cirugia abierto abdomen', 'ooforectomio', 'herniorrafia', 'esplenectomia', 'laparotomiar', 'cirugia intraperitoneal', 'laparoscopio', 'colecistectomio'] #intraperitoneal
+    terms2 = ['cirugia aorto toracico', 'cirugia toracico', 'timectomia', 'mediastinotomia', 'neumonectomia', 'drenaje toracico', 'lobectomia', 'pleurectomiar', 'toracoscopia', 'cirugia pared toracico', 'pleurodesis', 'cirugia esofago toracico', 'cirugia intratoracico', 'mediastinoscopia', 'cirugia torax', 'reseccion pulmonar', 'toracotomia'] #intratoracica
+    terms3 = ['endoprotesis aortico', 'endarterectomia aortico', 'colocacion stent aortico', 'revascularizacion aortico', 'transposicion aortico', 'arterioplastico aortico', 'cirugia aorto', 'reparacion aorto', 'cirugia valvula aortico', 'cirugia raiz aortico', 'anastomosis aortico', 'aneurismectomia', 'cirugia aortico', 'cirugia diseccion aortico', 'cirugia aneurismo aortico', 'cirugia reemplazo aorto', 'bypass aortico'] #aortica
+    terms4 = ['revascularizacion femoral', 'angioplastia femoral', 'bypass femoral', 'reseccion aneurisma femoral', 'bypass femoro popliteo', 'stent iliaco', 'bypass iliaco femoral', 'diseccion aneurismo femoral', 'arterioplastia iliaca', 'reseccion aneurisma iliaco', 'stent femoral', 'trombectomia femoral', 'arterioplastia femoral', 'bypass aortofemoral', 'cirugia suprainguinal vascular', 'cirugia vascular suprainguinal', 'endarterectomia iliaco', 'endarterectomimo femoral', 'ligadura arterial femoral', 'diseccion aneurismo iliaco', 'ligadura arterial iliaco'] #suprainguinal vascular
+    text1 = Find_Syn(terms1,f)
+    text2 = Find_Syn(terms2,f)
+    text3 = Find_Syn(terms3,f)
+    text4 = Find_Syn(terms4,f)
+    if text1.Term != "0" or text2.Term != "0": #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
+        if  text1.Term != "0":
+            Goldman.OR = Lee.OR = og[text1.Line]
+        if  text2.Term != "0":
+            Goldman.OR = Lee.OR = og[text2.Line]
         Goldman.OR_p = 3
-    if text['intraperitoneal'].Term != 0 or text['intratoracica'].Term != 0 or text['suprainguinal'].Term != 0: #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
-        if  text['intraperitoneal'].Term != 0:
-            Lee.OR = text['intraperitoneal'].Term
-        if  text['intratoracica'].Term != 0:
-            Lee.OR = text['intratoracica'].Term
-        if  text['suprainguinal'].Term != 0:
-            Lee.OR = text['suprainguinal'].Term
         Lee.OR_p = 1
-    print("Intraperitoneal: %s", text['intraperitoneal'].Term)
-    print("Intratoracica: %s", text['intratoracica'].Term)
-    print("Aortica: %s", text['aortica'].Term)
-    print("Suprainguinal: %s", text['suprainguinal'].Term)
+    elif text3.Term != "0": #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
+        Goldman.OR = og[text3.Line]
+        Goldman.OR_p = 3
+    elif text4.Term != "0": #Determinar si se encontró ritmo no sinusal o extrasístoles auriculares
+        Lee.OR = og[text4.Line]
+        Lee.OR_p = 1
+    print("Intraperitoneal: %s", og[text1.Line])
+    print("Intratoracica: %s", og[text2.Line])
+    print("Aortica: %s", og[text3.Line])
+    print("Suprainguinal: %s", og[text4.Line])
     return 0
 
 #Determinar si la operacion es de emergencia
-def Find_ER(f,Goldman, Detsky):
-    terms = ['cirugia urgencia', 'cirugia emergencia', 'cirugia inmediata', 'cirugia rescate', 'cirugia critica', 'procedimiento salvamiento', 'pprocedimiento vital', 'intervencion emergencia', 'tratamiento quirurgico urgencia', 'tratamiento quirurgico emergencia', 'procedimiento quirurgico critico', 'intervencion urgencia', 'procedimiento de rescate', 'intervencion critica', 'tratamiento quirurgico vital', 'procedimiento quirurgico emergencia']
+def Find_ER(f,og,Goldman, Detsky):
+    terms = ['procedimiento quirurgico critico', 'intervencion emergencia', 'cirugia criticar', 'tratamiento quirurgico vital', 'tratamiento quirurgico emergencia', 'cirugia emergencia', 'pprocedimiento vital', 'intervencion urgencia', 'procedimiento rescate', 'cirugia rescate', 'cirugia inmediato', 'procedimiento quirurgico emergencia', 'cirugia urgencia', 'tratamiento quirurgico urgencia', 'intervencion criticar', 'procedimiento salvamiento']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Goldman.ER = Detsky.ER = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Goldman.ER = Detsky.ER = og[text.Line]
         Goldman.ER_p = 4
         Detsky.ER_p = 10
-    print("ER: %s", text.Term)
+    print("ER: %s", Goldman.ER)
     return 0
 
 #Determinar historial de enfermedad cardíaca isquémica
-def Find_isq(f,Lee):
-    terms = ['enfermedad coronaria', 'angina de pecho', 'infarto de miocardio', 'sindrome coronario agudo', 'cardiopatia isquemica', 'cardiopatia coronaria', 'arteriopatia coronaria', 'isquemia miocardica', 'isquemia cardiaca', 'isquemia coronaria', 'enfermedad cardiaca isquemica']
+def Find_isq(f,og,Lee):
+    terms = ['infarto miocardio', 'cardiopatia coronario', 'arteriopatia coronario', 'enfermedad coronario', 'isquemio coronario', 'sindromar coronario agudo', 'angin pecho', 'enfermedad cardiaco isquemico', 'isquemiar miocardica', 'cardiopatia isquemico', 'isquemio cardiaco']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Lee.isq = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Lee.isq = og[text.Line]
         Lee.isq_p = 1
-    print("isq: %s", text.Term)
+    print("isq: %s", Lee.isq)
     return 0
 
 #Determinar historial de insuficiencia cardíaca congestiva
-def Find_cong(f,Lee):
-    terms =  ['enfermedad cardiaca congestiva', 'insuficiencia cardiaca', 'insuficiencia cardiaca congestiva', 'insuficiencia ventricular', 'insuficiencia ventricular izquierda', 'insuficiencia ventricular derecha', 'cardiopatia congestiva', 'insuficiencia cardiaca cronica', 'insuficiencia cardiaca aguda', 'insuficiencia cardiaca aguda descompensada', '  icc ']
+def Find_cong(f,og,Lee):
+    terms = ['enfermedad cardiaca congestiva', 'insuficiencia cardiaco', 'insuficiencia cardiaca congestiva', 'insuficiencia ventricular', 'insuficiencia ventricular izquierda', 'insuficiencia ventricular derecha', 'cardiopatia congestiva', 'insuficiencia cardiaca cronica', 'insuficiencia cardiaca aguda', 'insuficiencia cardiaca aguda descompensada', ' icc']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Lee.cong = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Lee.cong = og[text.Line]
         Lee.cong_p = 1
-    print("cong: %s", text.Term)
+    print("cong: %s", Lee.cong)
     return 0
 
 #Determinar historial de enfermedad cerebrovascular
-def Find_CV(f,Lee):
-    terms = ['enfermedad cerebrovascular', 'accidente cerebrovascular', ' ictus ', 'derrame cerebral', 'infarto cerebral', 'embolia cerebral', 'hemorragia cerebral', 'apoplejia', 'ataque cerebral', 'isquemia cerebral', 'accidente isquemico transitorio', ' acv ', ' evc ', 'evc isquemico', 'evc hemorragico', 'hemorragia subaracnoidea', 'evento cerebral vascular']
+def Find_CV(f,og,Lee):
+    terms = ['accidente isquemico transitorio', '  ictus', 'ataque cerebral', '  evc', 'infarto cerebral', 'embolia cerebral', 'apoplejia', 'derrame cerebral', 'hemorragia subaracnoidea', '  acv', 'evc isquemico', 'hemorragia cerebral', 'isquemio cerebral', 'accidente cerebrovascular', 'enfermedad cerebrovascular', 'evc hemorragico', 'evento cerebral vascular']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Lee.CV = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Lee.CV = og[text.Line]
         Lee.CV_p = 1
-    print("CV: %s", text.Term)
+    print("CV: %s", Lee.CV)
     return 0
 
 #Determinar si hay terapia de insulina para diabetes
-def Find_diab(f,Lee):
-    terms = ['insulina accion rapida', 'insulina accion ultra rapida', 'insulina accion intermedia', 'insulina accion prolongada', 'insulina glargina', 'insulina detemir', 'insulina nph', 'insulina aspart', 'insulina glulisina', 'insulina lispro', 'terapia insulina', 'insulina', 'tratamiento insulina', 'insulina diabetes', 'insulina diabeticos', 'terapia insulinodependiente', 'tratamiento insulinodependiente', 'tratamiento diabetes tipo 1', 'diabetes insulinodependiente', 'diabetes tipo 1']
+def Find_diab(f,og,Lee):
+    terms = ['tratamiento diabet tipo 1', 'tratamiento insulinodependiente', 'terapia insulinodependiente', 'insulin nph', 'insulin glulisin', 'insulina lispro', 'tratamiento insulin', 'insulina aspart', 'insulina diabetico', 'insulina accion ultra rapido', 'insulina accion rapido', 'insulina accion prolongado', 'insulin detemir', 'terapia insulin', 'insulina accion intermedia', 'insulina', 'diabetes insulinodependiente', 'diabet tipo 1', 'insulina glargin', 'insulin diabetes']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Lee.diab = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Lee.diab = og[text.Line]
         Lee.diab_p = 1
-    print("Diab: %s", text.Term)
+    print("Diab: %s", Lee.diab)
     return 0
 
 #Determinar creatinina preoperatoria
-def Find_Cr(f,Lee):
-    terms = ['creatinina preoperatoria', 'creatinina previa cirugia', 'creatinina preoperatoria tomada', 'creatinina preoperatoria realizada', 'evaluacion creatinina preoperatoria']
-    unit1 = ['mg/dl', 'mg / dl', 'miligramos decilitro']
-    unit2 = ['micromol/l', 'micromolar', 'micromol litro']
+def Find_Cr(f,og,Lee):
+    terms = ['creatinina preoperatorio', 'creatinina preoperatorio tomado', 'creatinina preoperatorio realizado', 'creatinina previo cirugia', 'evaluacion creatinin preoperatoria']
+    unit1 = ['mg/dl', 'mg / dl', 'miligramo decilitro']
+    unit2 = ['micromolar', 'micromol litro', 'micromol / l']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Lee.Cr = og[text.Line]
         x = Find_Cant(text.Term)
         for i in unit1:  # Determinar la cantidad de creatinina en mg/dL
             if i in text.Term and x >= 2:
-                Lee.Cr = text.Term
                 Lee.Cr_p = 1
                 break
         for i in unit2:  # Determinar la cantidad de creatinina en micromol/L
             if i in text.Term and x >= 177:
-                Lee.Cr = text.Term
                 Lee.Cr_p = 1
                 break
-    print("Cr: %s", text.Term)
+    print("Cr: %s", Lee.Cr)
     return 0
 
 #Determinar angina segun la Sociedad Cardiovascular Canadiense
-def Find_ang(f,Detsky):
-    terms1 = ['marcada limitacion actividad fisica ordinaria', 'limitacion significativa actividad fisica habitual', 'restriccion notable actividad fisica diaria', 'limitacion pronunciada actividad fisica rutinaria', 'dificultad marcada actividad fisica ordinaria', 'clase iii', 'clase 3', 'dificultad subir escaleras',  'problemas caminar distancias cortas', 'dificultad caminar ritmo normal']
-    terms2 = ['incapacidad actividad fisica molestias', 'limitacion realizar actividad fisica', 'dificultad ejercer actividad fisica molestias', 'molestia realizar actividad fisica', 'imposibilidad actividad fisica molestias', 'angina reposo', 'sindrome isquemico coronario agudo reposo', ' sica reposo', 'dolor toracico reposo', 'angina pecho reposo', 'dolor pecho reposo', 'clase iv', 'clase 4']
+def Find_ang(f,og,Detsky):
+    terms1 = ['limitacion pronunciado actividad fisico rutinario', 'marcado limitacion actividad fisico ordinario', 'clase iii', 'clase 3', 'dificultad subir escalera', 'dificultad marcado actividad fisico ordinario', 'dificultad caminar ritmo normal', 'limitacion significativo actividad fisico habitual', 'restriccion notable actividad fisico diario', 'problema caminar distancia corto']
+    terms2 = ['angin pecho reposo', 'clase iv', 'angina reposo', 'limitacion realizar actividad fisico', 'angina pecho reposo', 'sica reposo', 'sindromar isquemico coronario agudo reposo', 'dolor toracico reposo', 'dificultad ejercer actividad fisico molestia', 'molestia realizar actividad fisico', 'incapacidad actividad fisico molestia', 'clase 4', 'imposibilidad actividad fisico molestia', 'dolor pecho reposo']
     text1 = Find_Syn(terms1, f)
     text2 = Find_Syn(terms2, f)
-    if text1.Term != 0:
-        Detsky.ang = text1.Term
+    if text1.Term != "0":
+        Detsky.ang = og[text1.Line]
         Detsky.ang_p = 10
-    if text2.Term != 0:
-        Detsky.ang = text2.Term
+    elif text2.Term != "0":
+        Detsky.ang = og[text2.Line]
         Detsky.ang_p = 20
     print("Angina canadidense: %s", Detsky.ang)
     return 0
 
 #Determinar angina inestable
-def Find_angina(f,Detsky):
-    terms = ['sindrome isquemico coronario agudo', 'sica', 'dolor toracico opresivo', 'angina inestable', 'dolor toracico inestable', 'dolor precordial inestable', 'sindrome coronario agudo sin elevacion st ', 'insuficiencia coronaria aguda', 'angor inestable']
+def Find_angina(f,og,Detsky):
+    terms = ['angor inestable', 'dolor toracico inestable', 'dolor precordial inestable', 'angina inestable', 'sindromar isquemico coronario agudo', 'dolor toracico opresivo', 'insuficiencia coronario agudo', 'sica', 'sindromar coronario agudo sin elevacion st']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Detsky.angina = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Detsky.angina = og[text.Line]
         Detsky.angina_p = 10
-    print("Angina inestable: %s", text.Term)
+    print("Angina inestable: %s", Detsky.angina)
     return 0
 
 #Determinar edema pulmonar
-def Find_edema(f,Detsky):
-    terms = ['edema pulmonar', 'insuficiencia respiratoria aguda', 'congestion pulmonar', 'edema agudo pulmon', 'sindrome dificultad respiratoria aguda', ' sdra ']
+def Find_edema(f,og,Detsky):
+    terms = ['congestion pulmonar', 'sdra', 'sindromir dificultad respiratorio agudo', 'edema agudo pulmon', 'edema pulmonar', 'insuficiencia respiratorio agudo']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Detsky.edema = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Detsky.edema = og[text.Line]
         Detsky.edema_p = 5
         x = Find_Cant(text.Term)
         if ("semana" in text.Term and x <= 1) or ("dia" in text.Term and x <= 8): #Determinar si el edema ocurrió hace menos de una semana
             Detsky.edema_p = 10
-    print("Edema: %s", text.Term)
+    print("Edema: %s", Detsky.edema)
     return 0
 
 #Determinar cáncer activo
-def Find_cancer(f,Padua):
-    terms = ['cancer activo', 'tumor maligno', 'neoplasia', 'cancer', 'enfermedad neoplasica', 'enfermedad oncologica', 'radioterapia', 'terapia radiacion', 'tratamiento radiante', 'irradiacion', 'terapia radiante', 'radiacion terapeutica', 'metastasis', 'metastasizado', 'diseminacion metastasica', 'propagacion metastasica']
+def Find_cancer(f,og,Padua):
+    terms = ['radioterapia', 'cancer', 'diseminacion metastasico', 'tratamiento radiante', 'tumor maligno', 'neoplasio', 'metastasizado', 'cancer activo', 'enfermedad neoplasico', 'terapia radiacion', 'metastasi', 'propagacion metastasico', 'radiacion terapeutico', 'enfermedad oncologico', 'terapia radiante', 'irradiacion']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.cancer = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.cancer = og[text.Line]
         Padua.cancer_p = 3
-    print("Cancer: %s", text.Term)
+    print("Cancer: %s", Padua.cancer)
     return 0
 
 #Determinar TEV
-def Find_TEV(f,Padua):
-    terms = ['trombosis venosa profunda', 'tromboembolia pulmonar', ' tvp ', ' tep ', 'tromboembolismo venoso', ' tev ', 'trombosis venosa profunda', 'embolia pulmonar']
+def Find_TEV(f,og,Padua):
+    terms = ['embolia pulmonar', 'trombosis venos profundo', 'tromboembolia pulmonar', '  tep', '  tvp', 'tromboembolismo venoso', '  tev', 'dimero d elevado']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.TEV = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.TEV = og[text.Line]
         Padua.TEV_p = 3
-    print("TEV: %s", text.Term)
+    print("TEV: %s", Padua.TEV)
     return 0
 
 #Determinar condición trombofilia conocida
-def Find_trombo(f,Padua):
-    terms = ['trombosis venosa profunda', 'tromboembolia pulmonar', ' tvp ', ' tep ', 'tromboembolismo venoso', ' tev ', 'trombosis venosa profunda', 'embolia pulmonar']
+def Find_trombo(f,og,Padua):
+    terms = ['defecto protein s', 'problema coagulacion sanguineo', 'enfermedad tromboembolico', 'coagulopatia hereditario', 'defecto antitrombin', 'anormalidad coagulacion', 'factor v leidir', 'trastorno hipercoagulabilidad', 'sindromar antifosfolipido', 'defecto proteinar c', 'trombofilia', 'trastorno tromboembolico', 'mutacion protrombin g20210a', 'trastorno trombotico', 'hipercoagulabilidad', 'enfermedad trombotico']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.trombo = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.trombo = og[text.Line]
         Padua.trombo_p = 3
-    print("Trombo: %s", text.Term)
+    print("Trombo: %s", Padua.trombo)
     return 0
 
 #Determinar trauma reciente o cirugía
-def Find_trauma(f,Padua):
-    terms = ['trauma', 'lesion', 'accidente', 'herida', 'evento traumatico', 'cirugia', 'intervencion quirurgica', 'procedimiento quirurgico', 'operacion', 'acto quirurgico', 'intervencion operatoria', 'procedimiento operatorio']
+def Find_trauma(f,og,Padua):
+    terms = ['intervencion quirurgico', 'intervencion operatoria', 'evento traumatico', 'acto quirurgico', 'procedimiento operatorio', 'trauma ', 'operacion', 'procedimiento quirurgico', 'accidente', 'lesion', 'cirugia', 'herido']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.OR = og[text.Line]
         x = Find_Cant(text.Term)
         if ("semana" in text.Term and x <= 4) or ("dia" in text.Term and x <= 31) or ("mes" in text.Term and x <= 1) or ("una semana" in text.Term): #Determinar si el edema ocurrió hace menos de una semana
-            Padua.OR = text.Term
             Padua.OR_p = 2
-    print("Trauma: %s", text.Term)
+    print("Trauma: %s" % Padua.OR)
     return 0
 
 #Determinar falla respiratoria o cardíaca
-def Find_falla(f,Padua):
-    terms = ['falla cardiaca', 'insuficiencia cardiaca', 'insuficiencia ventricular', 'insuficiencia ventricular', 'disfuncion ventricular', 'falla ventricular', 'cardiopatia congestiva', 'disfuncion sistolica', 'insuficiencia respiratoria', 'hipercarbia', 'hipercapnia', 'hipoxemia', 'hipoxia', 'insuficiencia respiratoria', 'fracaso respiratorio', 'dificultad respiratoria', 'alteracion respiratoria', 'falla pulmonar', 'insuficiencia pulmonar', 'falla respiratoria', 'disnea']
+def Find_falla(f,og,Padua):
+    terms = ['hipoxia', 'alteracion respiratorio', 'disneo', 'atelectasio', 'consolidacion basal', 'derrame pleural', 'falla ventricular', 'insuficiencia respiratorio', 'hipoxemiar', 'insuficiencia cardiaco', 'dificultad respiratorio', 'hipercapnia', 'falla respiratorio', 'disfuncion sistolico', 'falla cardiaco', 'cardiopatia congestivo', 'fracaso respiratorio', 'disfuncion ventricular', 'hipercarbia', 'insuficiencia pulmonar', 'insuficiencia ventricular', 'fallo pulmonar', 'sibilancia', ]
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.falla = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.falla = og[text.Line]
         Padua.falla_p = 1
-    print("Falla: %s", text.Term)
+    print("Falla: %s" % Padua.falla)
     return 0
 
-#Determinar desorder reumatologico
-def Find_reuma(f,Padua):
-    terms = ['artritis reumatoide aguda', 'lupus eritematoso sistemico agudo', 'esclerodermia aguda', 'polimiositis aguda', 'dermatomiositis aguda', 'sindrome Sjogren agudo', 'desorden reumatologico agudo']
+#Determinar desorden reumatologico
+def Find_reuma(f,og,Padua):
+    print(Padua.IAM)
+    terms = ['sindromar Sjogren agudo', 'artritis reumatoidir agudo', 'polimiositis agudo', 'desorden reumatologico agudo', 'esclerodermia agudo', 'lupus eritematoso sistemico agudo', 'dermatomiositis agudo']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.IAM = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.IAM = og[text.Line]
         Padua.IAM_p = 1
-    print("Reuma: %s", text.Term)
+    print("Reuma: %s" % Padua.IAM)
     return 0
 
 #Determinar obesidad
-def Find_BMI(f,Padua):
-    terms = ['obesidad', 'sobrepeso', 'indice masa corporal elevado', 'adiposidad', 'exceso grasa corporal', 'hiperadiposidad', 'hiperplasia adiposa', 'sindrome metabolico', 'exceso peso', 'peso elevado', ' bmi ', ' imc ', 'indice masa corporal']
-    unit1 = [' bmi ', ' imc ', 'indice masa corporal']
-    text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.BMI = text.Term
-        Padua.BMI_p = 1
-        for i in unit1:  # Determinar la cantidad de creatinina en mg/dL
-            if i in text.Term:
-                x = Find_Cant(text.Term)
-                if x < 30:
-                    Padua.BMI_p = 0
-                break
-    print("BMI: %s", text.Term)
+def Find_BMI(f,og,Padua):
+    terms = ['hiperplasia adipos', 'sobrepeso', 'sindromar metabolico', 'exceso peso', 'indecir masa corporal elevado', 'adiposidad', 'hiperadiposidad', 'exceso grasa corporal', 'peso elevado', 'obesidad']
+    unit1 = ['  bmi', 'indicar masa corporal', '  imc']
+    text_unit = Find_Syn(unit1,f)
+    if text_unit.Term != "0":
+        Padua.BMI = og[text_unit.Line]
+        x = Find_Cant(text_unit.Term)
+        if x >= 30:
+            Padua.BMI_p = 1
+    else:
+        text = Find_Syn(terms,f)
+        if text.Term != "0": #Determinar si se encontró una coincidencia
+            Padua.BMI = og[text.Line]
+            Padua.BMI_p = 1
+    print("BMI: %s", Padua.BMI)
     return 0
 
 #Determinar terapia hormonal
-def Find_TH(f,Padua):
-    terms = ['tratamiento hormonal', 'terapia hormonal', 'hormonoterapia', 'tratamiento hormonas', 'terapia hormonas', 'terapia hormona', 'tratamiento hormona']
+def Find_TH(f,og,Padua):
+    terms = ['terapia hormonal', 'tratamiento hormonar', 'terapia hormona', 'tratamiento hormona', 'hormonoterapia', 'tratamiento hormonal']
     text = Find_Syn(terms,f)
-    if text.Term != 0: #Determinar si se encontró una coincidencia
-        Padua.TH = text.Term
+    if text.Term != "0": #Determinar si se encontró una coincidencia
+        Padua.TH = og[text.Line]
         Padua.TH_p = 1
-    print("TH: %s", text.Term)
+    print("TH: %s", Padua.TH)
     return 0
 
 #Determinar si hay algun criterio no encontrado

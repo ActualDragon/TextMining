@@ -10,31 +10,31 @@ class Goldman_Index:
     edad = 0 #Valor encontrado [Edad]
     edad_p = -1 #Puntaje asignado segun el indice
 
-    IAM = 0 #Infarto agudo de miocardio
+    IAM = "" #Infarto agudo de miocardio
     IAM_p = -1
 
-    JVD = ["",""] #Distención de la vena yugular o ruido cardíaco en S3
+    JVD = [""] #Distención de la vena yugular o ruido cardíaco en S3
     JVD_p = -1
 
-    EA = 0 #Estenosis aórtica
+    EA = "" #Estenosis aórtica
     EA_p = -1
 
-    ECG = 0 #Ritmo distinto al sinusal o CAP (contracciones auriculares prematuras) en su último ECG
+    ECG = "" #Ritmo distinto al sinusal o CAP (contracciones auriculares prematuras) en su último ECG
     ECG_p = -1
 
-    CVP = 0 #5 contracciones ventriculares prematuras / min documentadas en cualquier momento
+    CVP = "" #5 contracciones ventriculares prematuras / min documentadas en cualquier momento
     CVP_p = -1
 
     #PO2 (presión parcial de oxígeno) < 60 o PCO2 (presión parcial de dióxido de carbono) > 50 mm Hg, K (potasio) < 3.0 o HCO3 (bicarbonato) < 20 meq/litro,
     #BUN (nitrógeno ureico en sangre) > 50 o Cr (creatinina) > 3.0 mg/dl, SGOT (transaminasa glutámico-oxalacética) abnormal,
     #señales de enfermedad hepática crónica o paciente postrado por causas no-cardíacas
-    estado = 0
+    estado = ""
     estado_p = -1
 
-    OR = 0 #Cirugia intraperitoneal, intratorácica o aórtica
+    OR = "" #Cirugia intraperitoneal, intratorácica o aórtica
     OR_p = -1
 
-    ER = 0 #Cirugia de emergencia
+    ER = "" #Cirugia de emergencia
     ER_p = -1
 
     is_empty = 0
@@ -42,22 +42,22 @@ class Goldman_Index:
     eval = ""
 
 class Puntaje_Lee:
-    OR = 0  #Cirugia de alto riesgo (intraperitoneal, intratorácica o suprainguinal vascular) [Valor encontrado]
+    OR = ""  #Cirugia de alto riesgo (intraperitoneal, intratorácica o suprainguinal vascular) [Valor encontrado]
     OR_p = -1 #Puntaje asignado segun el indice
 
-    isq = 0 #Historial de enfermedad cardíaca isquémica
+    isq = "" #Historial de enfermedad cardíaca isquémica
     isq_p = -1
 
-    cong = 0 #Historial de enfermedad cardíaca congestiva
+    cong = "" #Historial de enfermedad cardíaca congestiva
     cong_p = -1
 
-    CV = 0 #Historial de enfermedaad cerebrovascular
+    CV = "" #Historial de enfermedaad cerebrovascular
     CV_p = -1
 
-    diab = 0 #Terapia de insulina para diabéticos
+    diab = "" #Terapia de insulina para diabéticos
     diab_p = -1
 
-    Cr = 0 #Creatinina preoperatoria > a 2 mg/dL (o > 177 micromol/L)
+    Cr = "" #Creatinina preoperatoria > a 2 mg/dL (o > 177 micromol/L)
     Cr_p = -1
 
     is_empty = 0
@@ -65,37 +65,37 @@ class Puntaje_Lee:
     eval = ""
 
 class Detsky_Index:
-    IAM = 0 #Valor encontrado Infarto agudo de miocardio < o > 6 meses
+    IAM = "" #Valor encontrado Infarto agudo de miocardio < o > 6 meses
     IAM_p = -1 #Puntaje asignado segun el indice
 
-    ang = 0 #Angina de pecho según la Sociedad Cardiovascular Canadiense -> Clase III o IV
+    ang = "" #Angina de pecho según la Sociedad Cardiovascular Canadiense -> Clase III o IV
     ang_p = -1
 
-    angina = 0 #Angina inestable < 3 meses
+    angina = "" #Angina inestable < 3 meses
     angina_p = -1
 
-    edema = 0 #Edema pulmonar < 1 semana o cualquier otro momento
+    edema = "" #Edema pulmonar < 1 semana o cualquier otro momento
     edema_p = -1
 
-    EA = 0 #Estenosis aórtica crítica
+    EA = "" #Estenosis aórtica crítica
     EA_p = -1
 
-    ECG = 0 #Ritmo distinto al sinusal o extrasístoles auriculares
+    ECG = "" #Ritmo distinto al sinusal o extrasístoles auriculares
     ECG_p = -1
 
-    CAP = 0 # >5 CAP (contracciones auriculares prematuras) / min documentados en cualquier momento
+    CAP = "" # >5 CAP (contracciones auriculares prematuras) / min documentados en cualquier momento
     CAP_p = -1
 
     #PO2 (presión parcial de oxígeno) < 60 o PCO2 (presión parcial de dióxido de carbono) > 50 mm Hg, K (potasio) < 3.0 o HCO3 (bicarbonato) < 20 meq/litro,
     #BUN (nitrógeno ureico en sangre) > 50 o Cr (creatinina) > 3.0 mg/dl, SGOT (transaminasa glutámico-oxalacética) abnormal,
     #señales de enfermedad hepática crónica o paciente postrado por causas no-cardíacas
-    estado = 0
+    estado = ""
     estado_p = -1
 
     edad = 0  #Edad > 70
     edad_p = -1
 
-    ER = 0 #Cirugía de emergencia
+    ER = "" #Cirugía de emergencia
     ER_p = -1
 
     is_empty = 0
@@ -103,35 +103,35 @@ class Detsky_Index:
     eval = ""
 
 class Puntaje_Padua:
-    cancer = 0 #Valor encontrado Cancer activo -> metástasis y/o han pasado por quimioterapia o radioterapia en los últimos 6 meses
+    cancer = "" #Valor encontrado Cancer activo -> metástasis y/o han pasado por quimioterapia o radioterapia en los últimos 6 meses
     cancer_p = -1 #Puntaje asignado segun el indice
 
-    TEV = 0 #Tromboembolismo venoso (excluyendo trombosis venosa superficial)
+    TEV = "" #Tromboembolismo venoso (excluyendo trombosis venosa superficial)
     TEV_p = -1
 
-    mov = 0 #Movilidad reducida -> postrado con privilegios de baño (por incapacidad del paciente u órdenes del médico) por lo menos 3 días
+    mov = "" #Movilidad reducida -> postrado con privilegios de baño (por incapacidad del paciente u órdenes del médico) por lo menos 3 días
     mov_p = -1
 
     #Condición trombofília conocida (defectos de antitrombina, proteína C o S, factor V Leiden, mutación de protrombina G20210A, síndrome antifosfolípido)
-    trombo = 0
+    trombo = ""
     trombo_p = -1
 
-    OR = 0 #Trauma reciente o cirugía <= 1 mes
+    OR = "" #Trauma reciente o cirugía <= 1 mes
     OR_p = -1
 
-    edad = 0  #Edad > 70
+    edad = ""  #Edad > 70
     edad_p = -1
 
-    falla = 0 #Falla cardíaca y/o respiratoria
+    falla = "" #Falla cardíaca y/o respiratoria
     falla_p = -1
 
-    IAM = 0 #Desorden reumatológico agudo o infarto agudo de miocardio
+    IAM = "" #Desorden reumatológico agudo o infarto agudo de miocardio
     IAM_p = -1
 
-    BMI = 0 #Obesidad (BMI >= 30)
+    BMI = "" #Obesidad (BMI >= 30)
     BMI_p = -1
 
-    TH = 0 #Tratammiento hormonal actual
+    TH = "" #Tratammiento hormonal actual
     TH_p = -1
 
     is_empty = 0
@@ -230,33 +230,34 @@ def indices(name):
     Lee = Puntaje_Lee()
     Detsky = Detsky_Index()
     Padua = Puntaje_Padua()
-    f = fx.Read_File(name) #Leer los contenidos del archivo
-    fx.Find_Edad(f,Goldman, Detsky, Padua)
-    fx.Find_IAM(f, Goldman, Detsky, Padua)
-    fx.Find_JVD(f, Goldman)
-    fx.Find_EA(f, Goldman,Detsky)
-    fx.Find_ECG(f, Goldman,Detsky)
-    fx.Find_CAP(f,Detsky)
-    fx.Find_CVP(f,Goldman)
-    fx.Find_estado(f, Goldman, Detsky, Padua)
-    fx.Find_OR(f, Goldman, Lee)
-    fx.Find_ER(f,Goldman, Detsky)
-    fx.Find_isq(f, Lee)
-    fx.Find_cong(f,Lee)
-    fx.Find_CV(f,Lee)
-    fx.Find_diab(f,Lee)
-    fx.Find_Cr(f,Lee)
-    fx.Find_ang(f,Detsky)
-    fx.Find_angina(f,Detsky)
-    fx.Find_edema(f,Detsky)
-    fx.Find_cancer(f,Padua)
-    fx.Find_TEV(f,Padua)
-    fx.Find_trombo(f,Padua)
-    fx.Find_trauma(f,Padua)
-    fx.Find_falla(f,Padua)
-    fx.Find_reuma(f,Padua)
-    fx.Find_BMI(f,Padua)
-    fx.Find_TH(f,Padua)
+    text = fx.Read_File(name) #Leer los contenidos del archivo
+    f = fx.Process_Text(text) #Procesar el texto
+    fx.Find_Edad(f,Goldman,Detsky,Padua)
+    fx.Find_IAM(f,text,Goldman,Detsky,Padua)
+    fx.Find_JVD(f,text,Goldman)
+    fx.Find_EA(f,text,Goldman,Detsky)
+    fx.Find_ECG(f,text,Goldman,Detsky)
+    fx.Find_CAP(f,text, Goldman,Detsky)
+    fx.Find_CVP(f,text,Goldman)
+    fx.Find_estado(f,text,Goldman,Detsky,Padua)
+    fx.Find_OR(f,text,Goldman,Lee)
+    fx.Find_ER(f,text,Goldman,Detsky)
+    fx.Find_isq(f,text,Lee)
+    fx.Find_cong(f,text,Lee)
+    fx.Find_CV(f,text,Lee)
+    fx.Find_diab(f,text,Lee)
+    fx.Find_Cr(f,text,Lee)
+    fx.Find_ang(f,text,Detsky)
+    fx.Find_angina(f,text,Detsky)
+    fx.Find_edema(f,text,Detsky)
+    fx.Find_cancer(f,text,Padua)
+    fx.Find_TEV(f,text,Padua)
+    fx.Find_trombo(f,text,Padua)
+    fx.Find_trauma(f,text,Padua)
+    fx.Find_falla(f,text,Padua)
+    fx.Find_reuma(f,text,Padua)
+    fx.Find_BMI(f,text,Padua)
+    fx.Find_TH(f,text,Padua)
     MakeClass(Goldman,"G")
     MakeClass(Lee,"L")
     MakeClass(Detsky,"D")
@@ -286,7 +287,7 @@ def print():
         if points == 5: Detsky.IAM_p = points
         else: Goldman.IAM_p = Detsky.IAM_p = points
     if Goldman.JVD_p == -1: #JVD
-            Goldman.JVD[0] = value
+            Goldman.JVD = value
             Goldman.JVD_p = form_data["Goldman_JVD"]
     if Goldman.EA_p == -1: #EA
             Goldman.EA = Detsky.EA = value
@@ -375,8 +376,8 @@ def print():
 
 #Funcion main driver
 if __name__ == '__main__':
-    #webbrowser.open_new("http://127.0.0.1:5000") Abrir la pagina principal en el navegador cuando se corre la app
-    #app.run()
-    ui.run()
+    webbrowser.open_new("http://127.0.0.1:5000") #Abrir la pagina principal en el navegador cuando se corre la app
+    app.run()
+    #ui.run()
 
 #https://medium.com/@fareedkhandev/create-desktop-application-using-flask-framework-ee4386a583e9
