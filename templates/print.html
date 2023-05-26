@@ -11,6 +11,8 @@
 
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
 
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
     <!-- Font tags -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,6 +28,17 @@
     </header>
 
     <div class="container-fluid">
+      {% block content %}
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning">
+            {{ message }}
+        </div>
+        {% endfor %}
+
+        {% block page_content %}{% endblock %}
+    </div>
+    {% endblock %}
       <div class="p-3">
         <a class="btn btn-rounded btn-primary" role="button" id = "button-style" href = "javascript:window.history.back();">Regresar</a>
         <span class="pt-3 ps-3 pe-3">
@@ -373,8 +386,26 @@
                 </div>
             </div>
         </div>
+        <div class="p-3" id="Guarda_archivo">
+          Guardar los resultados:
+          <a class="btn btn-rounded btn-primary" role="button" id = "Save_File" onclick="openForm()">Descargar</a>
+        </div>
+
+        <!-- Form para guardar archivo -->
+        <div class="form-popup" id="Form_guardar">
+          <form action="http://localhost:5000/save" class="form-container">
+            <h1  id="Guarda_title">Guardar los datos</h1>
+
+            <label for="nombre" id="Guarda_subtitle"><b>Nombre del archivo</b></label>
+            <input type="text" placeholder="Introduce el nombre del archivo sin extensión" name="nombre" required>
+
+            <input type="hidden" id="Goldman_Save" name="GoldmanSave" value="{{Goldman.IAM}}">
+
+            <button type="submit" class="btn">Guardar</button>
+            <button type="button" class="btn cancel" onclick="closeForm()">Cancelar</button>
+          </form>
+        </div>
       </div>
-    </div>
     <footer class="panel-footer">
     </footer>
 

@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, render_template, session, abort, jsonify #Framework que permite crear aplicaciones web
+from flask import Flask, redirect, url_for, request, render_template, session, flash #Framework que permite crear aplicaciones web
 from werkzeug.utils import secure_filename #validar el archivo
 import os #usar funcionalidades dependientes del sistema operativo
 import webbrowser #Manejar el navegador
@@ -207,10 +207,16 @@ def load():
     basedir = os.path.abspath(os.path.dirname(__file__)) #Obtener el directorio actual
     path = f"{basedir}\\static\\uploads" #Obtener el directorio de los archivos temporales
 
-    filelist = [ f for f in os.listdir(path) if f.endswith(".doc") or f.endswith(".docx") ] #Obtener los archivos
+    filelist = [ f for f in os.listdir(path) if f.endswith(".doc") or f.endswith(".docx")] #Obtener los archivos
     for f in filelist:
         os.remove(os.path.join(path, f)) #Eliminar los archivos
     return render_template('index.html')
+
+#Si se desea agregar un paciente nuevo
+@app.route('/alta')
+def alta():
+    name = "Alta_paciente"
+    return redirect(url_for('indices', name=name))
 
 #Recibir el archivo subido
 @app.route('/index', methods=['POST'])
@@ -222,8 +228,8 @@ def index():
         #agregar validación de si no hay archivo
         if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
                 file_ext != fx.validate_file(uploaded_file):
-            print("Error controlado")
-            abort(400)
+            flash('Por favor ingrese solamente un archivo .doc o .docx')
+            return redirect(url_for('/home'))
         basedir = os.path.abspath(os.path.dirname(__file__)) #Obtener el directorio actual
         uploaded_file.save(os.path.join(basedir,app.config['UPLOAD_PATH'], filename)) #Guardar una copia temporal del archivo subido
     return redirect(url_for('indices', name=filename))
@@ -234,7 +240,10 @@ def indices(name):
     Lee = Puntaje_Lee()
     Detsky = Detsky_Index()
     Padua = Puntaje_Padua()
-    text = fx.Read_File(name) #Leer los contenidos del archivo
+    if name == "Alta_paciente": #Si se van a registrar los datos de un paciente sin expediente
+        text = ["Alta", "Paciente", "Nuevo"]
+    else: #Si se subió un expediente
+        text = fx.Read_File(name) #Leer los contenidos del archivo
     f = fx.Process_Text(text) #Procesar el texto
     fx.Find_Edad(f,Goldman,Detsky,Padua)
     fx.Find_IAM(f,text,Goldman,Detsky,Padua)
@@ -282,14 +291,24 @@ def print():
     form_data = request.form
     value = "No en el expediente. Seleccionado manualmente por el usuario"
     if Goldman.edad_p == -1: #Edad
-        Goldman.edad = Detsky.edad = Padua.edad = value
-        Goldman.edad_p = Detsky.edad_p = Padua.edad_p = form_data["Goldman_edad"]
-        Padua.edad_p = int(int(Padua.edad_p)*(1/5))
+        Goldman.edad = Detsky.edad = Padua.edad = form_data["Goldman_edad"]
+        if int(Goldman.edad) >= 70:
+            Goldman.edad_p = Detsky.edad_p= 5
+        else:
+            Goldman.edad_p = Detsky.edad_p= 0
+        Padua.edad_p = int(int(Goldman.edad_p)*(1/5))
     if Goldman.IAM_p == -1: #IAM
-        Goldman.IAM = Detsky.IAM = value
         points = form_data["Goldman_IAM"]
-        if points == 5: Detsky.IAM_p = points
-        else: Goldman.IAM_p = Detsky.IAM_p = points
+        match points:
+            case "10":
+                Goldman.IAM_p = Detsky.IAM_p = points
+                Goldman.IAM = Detsky.IAM = "Paciente presentó un IAM hace menos de 6 meses"
+            case "5":
+                Detsky.IAM_p = points
+                Goldman.IAM = Detsky.IAM = "Paciente presentó un IAM hace más de 6 meses"
+            case _:
+                Goldman.IAM_p = Detsky.IAM_p = points
+                Goldman.IAM = Detsky.IAM = "Paciente no presentó un IAM"
     if Goldman.JVD_p == -1: #JVD
             Goldman.JVD = value
             Goldman.JVD_p = form_data["Goldman_JVD"]
@@ -375,8 +394,32 @@ def print():
         Padua.TH = value
         Padua.TH_p = form_data["Padua_TH"]
     fx.AddTotal(Goldman, Detsky, Lee, Padua) #Hacer la suma final
+    #Cuando se vuelve a cargar la página después de guardar el archivo, mostrarle una alerta al usuario
+    if session.get('archivo'):
+        archivo = session.get('archivo')
+        if os.path.isfile(archivo):
+            flash("Archivo Guardado Exitosamente!\nLo encontrarás en la carpeta \"Descargas\"")
     return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua)
 
+@app.route("/save", methods=['GET','POST'])
+def save():
+    nombre = request.args.get("nombre")
+    Goldman = request.args.get("GoldmanSave")
+
+    save_path = os.path.join(os.path.expanduser("~"),"Downloads")
+    name_of_file = "Prueba.doc"
+    completeName = os.path.join(save_path, nombre)
+
+    file1 = open(completeName, "w+")
+
+    toFile = "Hello World!"
+
+    file1.write(Goldman)
+
+    file1.close()
+    session['archivo'] = completeName
+
+    return redirect(url_for('print'))
 
 #Funcion main driver
 if __name__ == '__main__':

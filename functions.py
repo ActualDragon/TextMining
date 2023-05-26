@@ -412,7 +412,7 @@ def Find_edema(f,og,Detsky):
 def Find_cancer(f,og,Padua):
     terms = ['radioterapia', 'cancer', 'diseminacion metastasico', 'tratamiento radiante', 'tumor maligno', 'neoplasio', 'metastasizado', 'cancer activo', 'enfermedad neoplasico', 'terapia radiacion', 'metastasi', 'propagacion metastasico', 'radiacion terapeutico', 'enfermedad oncologico', 'terapia radiante', 'irradiacion']
     text = Find_Syn(terms,f)
-    if text.Term != "0": #Determinar si se encontró una coincidencia
+    if text.Term != "0" and 'remision' not in text.Term: #Determinar si se encontró una coincidencia
         Padua.cancer = og[text.Line]
         Padua.cancer_p = 3
     print("Cancer: %s", Padua.cancer)

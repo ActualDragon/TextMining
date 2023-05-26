@@ -42,11 +42,7 @@
                                 {% if Goldman.edad_p == -1 %}
                                 <div class="mb-3">
                                 <label for="Goldman_edad" class="form-label">Edad
-                                    <select class="form-select form-select-sm" name="Goldman_edad" required>
-                                        <option selected value="" disabled>Por favor selecciona de acuerdo a tu paciente</option>
-                                        <option value="5">El paciente tiene más de 70 años</option>
-                                        <option value="0">El paciente tiene 70 años o menos</option>
-                                    </select></label>
+                                <input type="number" id="GoldmanEdad" name="Goldman_edad" min="0" oninput="validity.valid||(value='');" required></label>
                                 </div>
                                {% endif %}
                                 {% if Goldman.IAM_p == -1 %}

@@ -32,8 +32,15 @@ td {
   justify-content: center;
 }
 
-#Procesando, #Time {
+#Procesando, #Time,
+#Guarda_title, #Guarda_subtitle {
   color: #92aad0;
+  text-align: center;
+  margin-top: 10px;
+}
+
+#Guarda_title, #Guarda_subtitle {
+  color: #6582B0;
   text-align: center;
   margin-top: 10px;
 }
@@ -43,7 +50,7 @@ td {
 }
 
 #submit_file, #button-style,
-#inicio-style, #MainHeader {
+#inicio-style, #MainHeader, #Save_File {
     background-color: #92aad0;
 }
 
@@ -65,6 +72,14 @@ td {
   .intro {
     height: 550px;
   }
+}
+
+#Alta_paciente {
+  float: right;
+  background-color: #92aad0;
+}
+#Guarda_archivo {
+  float: right;
 }
 
 a.link {
@@ -127,3 +142,60 @@ a.link:active {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
   }
+
+
+/* FORM PRUEBA GUARDAR ARCHIVO */
+
+/* Form guardar archivo */
+.form-popup {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  right: 15px;
+  border: 3px solid #6582B0;
+  z-index: 9;
+}
+
+/* Add styles to the form container */
+.form-container {
+  max-width: 300px;
+  padding: 10px;
+  background-color: #92aad0;
+}
+
+/* Full-width input fields */
+.form-container input[type=text]{
+  width: 100%;
+  padding: 15px;
+  margin: 5px 0 22px 0;
+  border: none;
+  background: #a2adbd;
+}
+
+/* When the inputs get focus, do something */
+.form-container input[type=text]:focus, .form-container input[type=password]:focus {
+  background-color: #ddd;
+  outline: none;
+}
+
+/* Set a style for the submit/login button */
+.form-container .btn {
+  background-color: #426193;
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom:10px;
+  opacity: 0.8;
+}
+
+/* Add a red background color to the cancel button */
+.form-container .cancel {
+  background-color: #426193;
+}
+
+/* Add some hover effects to buttons */
+.form-container .btn:hover, .open-button:hover {
+  opacity: 1;
+}
