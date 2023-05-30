@@ -1,4 +1,49 @@
 
+class Goldman_Index:
+    edad = 0 #Valor encontrado [Edad]
+    edad_p = -1 #Puntaje asignado segun el indice
+
+    IAM = "" #Infarto agudo de miocardio
+    IAM_p = -1
+
+    JVD = [""] #Distención de la vena yugular o ruido cardíaco en S3
+    JVD_p = -1
+
+    EA = "" #Estenosis aórtica
+    EA_p = -1
+
+    ECG = "" #Ritmo distinto al sinusal o CAP (contracciones auriculares prematuras) en su último ECG
+    ECG_p = -1
+
+    CVP = "" #5 contracciones ventriculares prematuras / min documentadas en cualquier momento
+    CVP_p = -1
+
+    #PO2 (presión parcial de oxígeno) < 60 o PCO2 (presión parcial de dióxido de carbono) > 50 mm Hg, K (potasio) < 3.0 o HCO3 (bicarbonato) < 20 meq/litro,
+    #BUN (nitrógeno ureico en sangre) > 50 o Cr (creatinina) > 3.0 mg/dl, SGOT (transaminasa glutámico-oxalacética) abnormal,
+    #señales de enfermedad hepática crónica o paciente postrado por causas no-cardíacas
+    estado = ""
+    estado_p = -1
+
+    OR = "" #Cirugia intraperitoneal, intratorácica o aórtica
+    OR_p = -1
+
+    ER = "" #Cirugia de emergencia
+    ER_p = -1
+
+    eval = ""
+    total = 0
+    is_empty = 0
+
+example = Goldman_Index()
+atributos = [attr for attr in dir(example) if not callable(getattr(example, attr)) and not attr.startswith("__")]
+
+for atributo in atributos:
+    valor = getattr(example, atributo)  # Obtener el valor del atributo
+
+    if not callable(valor):  # Ignorar métodos
+        print(f"{atributo}: {valor}")  # Imprimir nombre del atributo y su valor
+
+"""
 import os.path
 
 save_path = os.path.join(os.path.expanduser("~"),"Downloads")
@@ -14,7 +59,7 @@ toFile = "Hello World!"
 file1.write(toFile)
 
 file1.close()
-"""
+
 import spacy
 nlp = spacy.load('es_core_news_sm')
 nlp.Defaults.stop_words -= {"sin", "dia", "dias", "hoy"}

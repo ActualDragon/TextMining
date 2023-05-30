@@ -4,6 +4,7 @@ import os #usar funcionalidades dependientes del sistema operativo
 import webbrowser #Manejar el navegador
 from flaskwebgui import FlaskUI #Import the library that converts the flask web app to a desktop app
 import functions as fx
+from datetime import datetime
 
 #CLASES
 class Goldman_Index:
@@ -37,9 +38,9 @@ class Goldman_Index:
     ER = "" #Cirugia de emergencia
     ER_p = -1
 
-    is_empty = 0
-    total = 0
     eval = ""
+    total = 0
+    is_empty = 0
 
 class Puntaje_Lee:
     OR = ""  #Cirugia de alto riesgo (intraperitoneal, intratorácica o suprainguinal vascular) [Valor encontrado]
@@ -60,9 +61,9 @@ class Puntaje_Lee:
     Cr = "" #Creatinina preoperatoria > a 2 mg/dL (o > 177 micromol/L)
     Cr_p = -1
 
-    is_empty = 0
-    total = 0
     eval = ""
+    total = 0
+    is_empty = 0
 
 class Detsky_Index:
     IAM = "" #Valor encontrado Infarto agudo de miocardio < o > 6 meses
@@ -98,8 +99,8 @@ class Detsky_Index:
     ER = "" #Cirugía de emergencia
     ER_p = -1
 
-    is_empty = 0
     total = 0
+    is_empty = 0
     eval = ""
 
 class Puntaje_Padua:
@@ -134,48 +135,41 @@ class Puntaje_Padua:
     TH = "" #Tratammiento hormonal actual
     TH_p = -1
 
-    is_empty = 0
     total = 0
+    is_empty = 0
     eval = ""
 
 # _.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.__.~"~._.~"~._.~"~._.~"~.
 
-def MakeClass(type,list): #Almacenar los objetos para poder accesarlos desde las diversas páginas
-    match list:
-        case "G":
-            Name = "Goldman"
-            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER"]
-        case "D":
-            Name = "Detsky"
-            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER"]
-        case "L":
-            Name = "Lee"
-            List = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p", "OR", "isq", "cong", "CV", "diab", "Cr"]
-        case "P":
-            Name = "Padua"
-            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH"]
-        case _:
-            return 0
-    for x in range(len(List)):
-        var = Name+"."+List[x]
-        val = getattr(type,List[x])
-        session[var] = val
+def MakeClass(type,Name): #Almacenar los objetos para poder accesarlos desde las diversas páginas
+    atributos = [attr for attr in dir(type) if not callable(getattr(type, attr)) and not attr.startswith("__")]
+    for atributo in atributos:
+        var = Name+"."+f'{atributo}'
+        valor = getattr(type, atributo)  # Obtener el valor del atributo
+        session[var] = valor
+    return 0
+
+def PopClass(type, Name):
+    atributos = [attr for attr in dir(type) if not callable(getattr(type, attr)) and not attr.startswith("__")]
+    for atributo in atributos:
+        var = Name+"."+f'{atributo}'
+        session.pop(var)
     return 0
 
 def FindClass(type): #Acceder a los objetos guardados
     match type:
         case "Goldman":
             Object = Goldman_Index()
-            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER"]
+            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER", "total", "is_empty", "eval"]
         case "Detsky":
             Object = Detsky_Index()
-            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER"]
+            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER", "total", "is_empty", "eval"]
         case "Lee":
             Object = Puntaje_Lee()
-            List = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p", "OR", "isq", "cong", "CV", "diab", "Cr"]
+            List = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p", "OR", "isq", "cong", "CV", "diab", "Cr", "total", "is_empty", "eval"]
         case "Padua":
             Object = Puntaje_Padua()
-            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH"]
+            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH", "total", "is_empty", "eval"]
         case _:
             return 0
     for x in List:
@@ -203,6 +197,7 @@ def instructions():
 
 @app.route('/home')
 def load():
+    session.clear() #Eliminar sesiones anteriores
     #Eliminar todos las copias temporales de los expedientes que se hayan quedado almacenados si la aplicación no se cerró adecuadamente
     basedir = os.path.abspath(os.path.dirname(__file__)) #Obtener el directorio actual
     path = f"{basedir}\\static\\uploads" #Obtener el directorio de los archivos temporales
@@ -271,10 +266,10 @@ def indices(name):
     fx.Find_reuma(f,text,Padua)
     fx.Find_BMI(f,text,Padua)
     fx.Find_TH(f,text,Padua)
-    MakeClass(Goldman,"G")
-    MakeClass(Lee,"L")
-    MakeClass(Detsky,"D")
-    MakeClass(Padua,"P")
+    MakeClass(Goldman,"Goldman")
+    MakeClass(Lee,"Lee")
+    MakeClass(Detsky,"Detsky")
+    MakeClass(Padua,"Padua")
     empty = fx.FindEmpty(Goldman, Lee, Detsky, Padua) #Determinar si hay atributos vacios
     if empty == 1:
         return render_template('validar.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua) #Si hay atributos vacios, redirigir a un form que pide los datos faltantes
@@ -288,8 +283,11 @@ def print():
     Detsky = FindClass("Detsky")
     Lee = FindClass("Lee")
     Padua = FindClass("Padua")
+    PopClass(Goldman,"Goldman")
+    PopClass(Detsky,"Detsky")
+    PopClass(Lee,"Lee")
+    PopClass(Padua,"Padua")
     form_data = request.form
-    value = "No en el expediente. Seleccionado manualmente por el usuario"
     if Goldman.edad_p == -1: #Edad
         Goldman.edad = Detsky.edad = Padua.edad = form_data["Goldman_edad"]
         if int(Goldman.edad) >= 70:
@@ -302,121 +300,257 @@ def print():
         match points:
             case "10":
                 Goldman.IAM_p = Detsky.IAM_p = points
-                Goldman.IAM = Detsky.IAM = "Paciente presentó un IAM hace menos de 6 meses"
+                Goldman.IAM = Detsky.IAM = "Paciente presentó un IAM hace menos de 6 meses."
             case "5":
                 Detsky.IAM_p = points
-                Goldman.IAM = Detsky.IAM = "Paciente presentó un IAM hace más de 6 meses"
+                Goldman.IAM = Detsky.IAM = "Paciente presentó un IAM hace más de 6 meses."
             case _:
                 Goldman.IAM_p = Detsky.IAM_p = points
-                Goldman.IAM = Detsky.IAM = "Paciente no presentó un IAM"
+                Goldman.IAM = Detsky.IAM = "Paciente no presentó un IAM."
     if Goldman.JVD_p == -1: #JVD
-            Goldman.JVD = value
             Goldman.JVD_p = form_data["Goldman_JVD"]
+            if Goldman.JVD_p == "11":
+                Goldman.JVD = "Paciente presenta distensión de la vena yugular o ruido cardiaco en S3."
+            else:
+                Goldman.JVD = "Paciente no presenta distensión de la vena yugular o ruido cardiaco en S3."
     if Goldman.EA_p == -1: #EA
-            Goldman.EA = Detsky.EA = value
             Goldman.EA_p = Detsky.EA_p = form_data["Goldman_EA"]
             Detsky.EA_p = int(int(Detsky.EA_p)*(20/3))
+            if Goldman.EA_p == "3":
+                Goldman.EA = Detsky.EA = "Paciente presenta estenosis aórtica significativa."
+            else:
+                Goldman.EA = Detsky.EA = "Paciente no presenta estenosis aórtica significativa."
     if Goldman.ECG_p == -1: #ECG (Goldman)
-            Goldman.ECG = value
             Goldman.ECG_p = form_data["Goldman_ECG"]
+            if Goldman.ECG_p == "7":
+                Goldman.ECG = "Paciente presenta ritmo distinto al sinusal o contracciones auriculares prematuras en su último ECG."
+            else:
+                Goldman.ECG = "Paciente no presenta ritmo distinto al sinusal o contracciones auriculares prematuras en su último ECG."
     if Detsky.ECG_p == -1: #ECG (Detsky)
-            Detsky.ECG = value
             Detsky.ECG_p = form_data["Detsky_ECG"]
+            if Detsky.ECG_p == "5":
+                Detsky.ECG = "Paciente presenta ritmo distinto al sinusal o extrasístoles auriculares."
+            else:
+                Detsky.ECG = "Paciente no presenta ritmo distinto al sinusal o extrasístoles auriculares."
     if Goldman.CVP_p == -1: #CVP
-            Goldman.CVP = value
             Goldman.CVP_p = form_data["Goldman_CVP"]
+            if Goldman.CVP_p == "7":
+                Goldman.CVP = "Paciente presenta más de 5 CVP's / min documentados en cualquier momento."
+            else:
+                Goldman.CVP = "Paciente no presenta más de 5 CVP's / min documentados en cualquier momento."
     if Goldman.estado_p == -1: #Estado general
-        Goldman.estado = Detsky.estado = value
         Goldman.estado_p = Detsky.estado_p = form_data["Goldman_estado"]
         Detsky.estado_p = int(int(Detsky.estado_p)*(5/3))
+        if Goldman.estado_p == "3":
+            Goldman.estado = Detsky.estado = "Paciente presenta pobre estado médico general"
+        else:
+            Goldman.estado = Detsky.estado = "Paciente no presenta pobre estado médico general"
+        Goldman.estado = Goldman.estado + "(PO2 [presión parcial de oxígeno] < 60 o PCO2 [presión parcial de dióxido de carbono] > 50 mm Hg, K [potasio], < 3.0 o HCO3 [bicarbonato], > 20 meq/litro, BUN [nitrógeno ureico en sangre] > 50 o Cr [creatinina] > 3.0 mg/dl, SGOT [transaminasa glutámico-oxalacética] abnormal, señales de enfermedad hepática crónica o paciente postrado por causas no-cardíacas)."
     if Goldman.OR_p == -1: #Tipo de operación (Goldman)
-        Goldman.OR = value
         Goldman.OR_p = form_data["Goldman_OR"]
+        if Goldman.OR_p == "3":
+            Goldman.OR = "La cirugía es intraperitoneal o intratorácica o aórtica."
+        else:
+            Goldman.OR = "La cirugía no es intraperitoneal o intratorácica o aórtica."
     if Lee.OR_p == -1: #Tipo de operación (Lee)
-        Lee.OR = value
         Lee.OR_p = form_data["Lee_OR"]
+        if Lee.OR_p == "1":
+            Lee.OR = "La cirugía es intraperitoneal, intratorácica o suprainguinal vascular."
+        else:
+            Lee.OR = "La cirugía no es intraperitoneal, intratorácica o suprainguinal vascular."
     if Goldman.ER_p == -1: #Cirugía de emergencia
-        Goldman.ER = Detsky.ER = value
         Goldman.ER_p = Detsky.ER_p = form_data["Goldman_ER"]
         Detsky.ER_P = int(int(Detsky.ER_p)*(5/2))
+        if Goldman.ER_p == "4":
+            Goldman.ER = Detsky.ER = "La cirugía es de emergencia."
+        else:
+            Goldman.ER = Detsky.ER = "La cirugía no es de emergencia."
     if Lee.isq_p == -1: #Enfermedad cardíaca isquémica
-        Lee.isq = value
         Lee.isq_p = form_data["Lee_isq"]
+        if Lee.isq_p == "1":
+            Lee.isq = "El paciente presenta historial de enfermedad cardíaca isquémica."
+        else:
+            Lee.isq = "El paciente no presenta historial de enfermedad cardíaca isquémica."
     if Lee.cong_p == -1: #Enfermedad cardíaca congestiva
-        Lee.cong = value
         Lee.cong_p = form_data["Lee_cong"]
+        if Lee.cong_p == 1:
+            Lee.cong = "El paciente presenta historial de enfermedad cardíaca congestiva."
+        else:
+            Lee.cong = "El paciente no presenta historial de enfermedad cardíaca congestiva."
     if Lee.CV_p == -1: #Enfermedad cerebrovascular
-        Lee.CV = value
         Lee.CV_p = form_data["Lee_CV"]
+        if Lee.CV_p == "1":
+            Lee.CV = "El paciente presenta historial de enfermedad cerebrovascular."
+        else:
+            Lee.CV = "El paciente no presenta historial de enfermedad cerebrovascular."
     if Lee.diab_p == -1: #Insulina para diabéticos
-        Lee.diab = value
         Lee.diab_p = form_data["Lee_diab"]
+        if Lee.diab_p == "1":
+            Lee.diab = "El paciente está en terapia de insulina para diabéticos."
+        else:
+            Lee.diab = "El paciente no está en terapia de insulina para diabéticos."
     if Lee.Cr_p == -1: #Creatinina preoperatoria
-        Lee.Cr = value
         Lee.Cr_p = form_data["Lee_Cr"]
+        if Lee.Cr_p == "1":
+            Lee.Cr = "El paciente presenta creatinina preoperatoria > a 2 mg/dL (o > 177 micromol/L)."
+        else:
+            Lee.Cr = "El paciente no presenta creatinina preoperatoria > a 2 mg/dL (o > 177 micromol/L)."
     if Detsky.ang_p == -1: #Angina de pecho
-        Detsky.ang = value
         Detsky.ang_p = form_data["Detsky_ang"]
+        match Detsky.ang_p:
+            case "10":
+                Goldman.IAM = Detsky.IAM = "El paciente presenta angina Clase III."
+            case "20":
+                Goldman.IAM = Detsky.IAM = "El paciente presenta angina Clase IV."
+            case _:
+                Goldman.IAM = Detsky.IAM = "El paciente no presenta angina Clase III o IV."
     if Detsky.angina_p == -1: #Angina inestable
-        Detsky.angina = value
         Detsky.angina_p = form_data["Detsky_angina"]
+        if Detsky.angina_p == "10":
+            Detsky.angina = "El paciente presenta angina inestable desde hace menos de 3 meses."
+        else:
+            Detsky.angina = "El paciente no presenta angina inestable desde hace menos de 3 meses."
     if Detsky.edema_p == -1: #Edema pulmonar
-        Detsky.edema = value
         Detsky.edema_p = form_data["Detsky_edema"]
+        match Detsky.edema_p:
+            case "10":
+                Goldman.IAM = Detsky.IAM = "El paciente presenta edema pulmonar desde hace menos de 1 semana."
+            case "5":
+                Goldman.IAM = Detsky.IAM = "El paciente presenta edema pulmonar desde hace más de 1 semana."
+            case _:
+                Goldman.IAM = Detsky.IAM = "El paciente no presenta edema pulmonar."
     if Detsky.CAP_p == -1: #CAP
-        Detsky.CAP = value
         Detsky.CAP_p = form_data["Detsky_CAP"]
+        if Detsky.CAP_p == "5":
+            Detsky.CAP = "El paciente presenta > 5 CAP / min documentados en cualquier momento."
+        else:
+            Detsky.CAP = "El paciente no presenta > 5 CAP / min documentados en cualquier momento."
     if Padua.cancer_p == -1: #Cáncer
-        Padua.cancer = value
         Padua.cancer_p = form_data["Padua_cancer"]
+        if Padua.cancer_p == "3":
+            Padua.cancer = "El paciente presenta cáncer activo"
+        else:
+            Padua.cancer = "El paciente no presenta cáncer activo"
+        Padua.cancer = Padua.cancer + "(Metástasis y/o ha pasado por quimioterapia o radioterapia en los últimos 6 meses)."
     if Padua.TEV_p == -1: #TEV
-        Padua.TEV = value
         Padua.TEV_p = form_data["Padua_TEV"]
+        if Padua.TEV_p == "3":
+            Padua.TEV = "El paciente presenta tromboembolismo venoso (excluyendo trombosis venosa superficial)."
+        else:
+            Padua.TEV = "El paciente no presenta tromboembolismo venoso (excluyendo trombosis venosa superficial)."
     if Padua.mov_p == -1: #Movilidad reducida
-        Padua.mov = value
         Padua.mov_p = form_data["Padua_mov"]
+        if Padua.mov_p == "3":
+            Padua.mov = "El paciente presenta movilidad reducida"
+        else:
+            Padua.mov = "El paciente presenta movilidad reducida"
+        Padua.mov = Padua.mov + "(Postrado con privilegios de baño [por incapacidad del paciente u órdenes del médico] por lo menos 3 días)."
     if Padua.trombo_p == -1: #Condición trombofília conocida
-        Padua.trombo = value
         Padua.trombo_p = form_data["Padua_trombo"]
+        if Padua.trombo_p == "3":
+            Padua.trombo = "El paciente presenta condición trombofília conocida"
+        else:
+            Padua.trombo = "El paciente no presenta condición trombofília conocida"
+        Padua.trombo = Padua.trombo + "(Defectos de antitrombina, proteína C o S, factor V Leiden, mutación de protrombina G20210A, síndrome antifosfolípido)."
     if Padua.OR_p == -1: #Trauma reciente o cirugía
-        Padua.OR = value
         Padua.OR_p = form_data["Padua_OR"]
+        if Padua.OR_p == "2":
+            Padua.OR = "El paciente ha tenido trauma o cirugía en el último mes."
+        else:
+            Padua.OR = "El paciente no ha tenido trauma o cirugía en el último mes."
     if Padua.falla_p == -1: #Falla cardíaca o respiratoria
-        Padua.falla = value
         Padua.falla_p = form_data["Padua_falla"]
+        if Padua.falla_p == "1":
+            Padua.falla = "El paciente presenta falla cardíaca o respiratoria."
+        else:
+            Padua.falla = "El paciente no presenta falla cardíaca o respiratoria."
     if Padua.IAM_p == -1: #Desorden reumatológico agudo o infarto agudo de miocardio
-        Padua.IAM = value
         Padua.IAM_p = form_data["Padua_IAM"]
+        if Padua.IAM_p == "1":
+            Padua.IAM = "El paciente presenta desorden reumatológico agudo o IAM."
+        else:
+            Padua.IAM = "El paciente no presenta desorden reumatológico agudo o IAM."
     if Padua.BMI_p == -1: #Obesidad
-        Padua.BMI = value
         Padua.BMI_p = form_data["Padua_BMI"]
+        if Padua.BMI_p == "1":
+            Padua.BMI = "El paciente presenta obesidad."
+        else:
+            Padua.BMI = "El paciente no presenta obesidad."
     if Padua.TH_p == -1: #Tratamiento hormonal
-        Padua.TH = value
         Padua.TH_p = form_data["Padua_TH"]
+        if Padua.TH_p == "1":
+            Padua.TH = "El paciente se encuentra en tratamiento hormonal."
+        else:
+            Padua.TH = "El paciente no se encuentra en tratamiento hormonal."
     fx.AddTotal(Goldman, Detsky, Lee, Padua) #Hacer la suma final
+    MakeClass(Goldman,"Goldman")
+    MakeClass(Lee,"Lee")
+    MakeClass(Detsky,"Detsky")
+    MakeClass(Padua,"Padua")
+    session.modified = True
     #Cuando se vuelve a cargar la página después de guardar el archivo, mostrarle una alerta al usuario
     if session.get('archivo'):
         archivo = session.get('archivo')
         if os.path.isfile(archivo):
+            session.pop("archivo")
             flash("Archivo Guardado Exitosamente!\nLo encontrarás en la carpeta \"Descargas\"")
     return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua)
 
 @app.route("/save", methods=['GET','POST'])
 def save():
+    Goldman = FindClass("Goldman") #Recuperar los objetos
+    Detsky = FindClass("Detsky")
+    Lee = FindClass("Lee")
+    Padua = FindClass("Padua")
+
+    nombre_file = request.args.get("nombre_file")
     nombre = request.args.get("nombre")
-    Goldman = request.args.get("GoldmanSave")
-
+    filename = secure_filename(nombre_file+".doc")
     save_path = os.path.join(os.path.expanduser("~"),"Downloads")
-    name_of_file = "Prueba.doc"
-    completeName = os.path.join(save_path, nombre)
+    completeName = os.path.join(save_path, filename)
+    dt = datetime.now()
+    time = f'{dt:%d-%m-%Y}'
 
-    file1 = open(completeName, "w+")
+    content = f"Expediente del paciente: {nombre}\nFecha de modificación: {time}\nEdad: {Goldman.edad}\n\nAntecedentes:\n1. Índice de Goldman:\n"
 
-    toFile = "Hello World!"
+    G_atributos = [attr for attr in dir(Goldman) if not callable(getattr(Goldman, attr)) and not attr.startswith("__")]
+    i = 1
+    for atributo in G_atributos:
+        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
+            valor = getattr(Goldman, atributo)  # Obtener el valor del atributo
+            content += f'- {valor}\n'
+        i = i+1
+    content += f'- Puntaje total: {getattr(Goldman, "total")}\n\n2. Índice de Detsky'
+    D_atributos = [attr for attr in dir(Detsky) if not callable(getattr(Detsky, attr)) and not attr.startswith("__")]
+    i = 1
+    for atributo in D_atributos:
+        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
+            valor = getattr(Detsky, atributo)  # Obtener el valor del atributo
+            content += f'- {valor}\n'
+        i = i+1
+    content += f'- Puntaje total: {getattr(Detsky, "total")}\n\n3. Puntaje de Lee:\n'
+    L_atributos = [attr for attr in dir(Lee) if not callable(getattr(Lee, attr)) and not attr.startswith("__")]
+    i = 1
+    for atributo in L_atributos:
+        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
+            valor = getattr(Lee, atributo)  # Obtener el valor del atributo
+            content += f'- {valor}\n'
+        i = i+1
+    content += f'- Puntaje total: {getattr(Lee, "total")}\n\n4. Puntaje de Padua:\n'
+    P_atributos = [attr for attr in dir(Padua) if not callable(getattr(Padua, attr)) and not attr.startswith("__")]
+    i = 1
+    for atributo in P_atributos:
+        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
+            valor = getattr(Padua, atributo)  # Obtener el valor del atributo
+            content += f'- {valor}\n'
+        i = i+1
+    content += f'- Puntaje total: {getattr(Padua, "total")}'
 
-    file1.write(Goldman)
+    file = open(completeName, "w+", encoding='utf-8')
+    file.write(u'\ufeff')
+    file.write(content)
+    file.close()
 
-    file1.close()
     session['archivo'] = completeName
 
     return redirect(url_for('print'))

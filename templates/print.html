@@ -395,11 +395,12 @@
         <div class="form-popup" id="Form_guardar">
           <form action="http://localhost:5000/save" class="form-container">
             <h1  id="Guarda_title">Guardar los datos</h1>
+            <label for="nombre_file" id="Guarda_subtitle">Nombre del archivo
+            <p id = "Name_subtitle">*Advertencia: Si el archivo ya existe en la carpeta "Descargas" se sobreescribiran sus contenidos</p>
+            <input type="text" placeholder="Solo usa números y letras" name="nombre_file" pattern="[a-zA-Z0-9]{1,50}" maxlength="50" required></label>
 
-            <label for="nombre" id="Guarda_subtitle"><b>Nombre del archivo</b></label>
-            <input type="text" placeholder="Introduce el nombre del archivo sin extensión" name="nombre" required>
-
-            <input type="hidden" id="Goldman_Save" name="GoldmanSave" value="{{Goldman.IAM}}">
+            <label for="nombre" id="Guarda_Paciente"><b>Nombre del paciente</b>
+              <input type="text" placeholder="Ingresa el nombre" name="nombre" pattern="[a-zA-Z0-9 ]+{1,200}" maxlength="200" required></label>
 
             <button type="submit" class="btn">Guardar</button>
             <button type="button" class="btn cancel" onclick="closeForm()">Cancelar</button>
