@@ -12,6 +12,7 @@
     <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
 
     <!-- Font tags -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,6 +44,9 @@
         <a class="btn btn-rounded btn-primary" role="button" id = "button-style" href = "javascript:window.history.back();">Regresar</a>
         <span class="pt-3 ps-3 pe-3">
         <a class="btn btn-rounded btn-primary" role="button" id = "inicio-style" href = "/">Inicio</a></span></div>
+
+        <div><canvas id="myChart" style="width:100%;max-width:600px"></canvas></div>
+
         <!-- Goldman -->
         <div class = "m-3 p-2 col-md-5 col-sm-11 rounded d-inline-block" id = "Goldman_Frm">
             <div class="row d-flex justify-content-center align-items-center">
@@ -400,7 +404,19 @@
             <input type="text" placeholder="Solo usa números y letras" name="nombre_file" pattern="[a-zA-Z0-9]{1,50}" maxlength="50" required></label>
 
             <label for="nombre" id="Guarda_Paciente"><b>Nombre del paciente</b>
-              <input type="text" placeholder="Ingresa el nombre" name="nombre" pattern="[a-zA-Z0-9 ]+{1,200}" maxlength="200" required></label>
+            <input type="text" placeholder="Ingresa el nombre" name="nombre" pattern="[a-zA-Z0-9 ]+{1,200}" maxlength="200" required></label>
+
+            <input type="hidden" id="Goldman_Point" name="Goldman_Point" value="{{ Goldman.total }}">
+            <input type="hidden" id="Goldman_Eval" name="Goldman_Eval" value="{{ Goldman.eval }}">
+
+            <input type="hidden" id="Detsky_Point" name="Detsky_Point" value="{{ Detsky.total }}">
+            <input type="hidden" id="Detsky_Eval" name="Detsky_Eval" value="{{ Detsky.eval }}">
+
+            <input type="hidden" id="Lee_Point" name="Lee_Point" value="{{ Lee.total }}">
+            <input type="hidden" id="Lee_Eval" name="Lee_Eval" value="{{ Lee.eval }}">
+
+            <input type="hidden" id="Padua_Point" name="Padua_Point" value="{{ Padua.total }}">
+            <input type="hidden" id="Padua_Eval" name="Padua_Eval" value="{{ Padua.eval }}">
 
             <button type="submit" class="btn">Guardar</button>
             <button type="button" class="btn cancel" onclick="closeForm()">Cancelar</button>
@@ -432,5 +448,29 @@
             setInterval(keep_alive_server, interval_request)()
         })
     </script>
+    <script>
+      var xValues = ["Goldman", "Detsky", "Lee"];
+      var yValues = [{{Goldman.percent}}, {{Detsky.percent}}, {{Lee.percent}}];
+      var barColors = ["rgb(39,83,128)","rgb(48,104,159)", "rgb(46,98,150)"];
+
+      new Chart("myChart", {
+        type: "bar",
+        data: {
+          labels: xValues,
+          datasets: [{
+            backgroundColor: barColors,
+            data: yValues
+          }]
+        },
+        options: {
+          responsive: true,
+          legend: {display: false},
+          title: {
+            display: true,
+            text: "Riesgo Preoperatorio por Índice"
+          }
+        }
+      });
+      </script>
   </body>
 </html>

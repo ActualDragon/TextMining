@@ -1,4 +1,38 @@
 
+
+
+import spacy
+nlp = spacy.load('es_core_news_sm')
+nlp.Defaults.stop_words -= {"sin", "dia", "dias", "hoy", "uso"}
+
+stopwords = nlp.Defaults.stop_words
+#print(type(stopwords))
+#print(len(stopwords))
+#print(stopwords)
+
+
+
+def process_sentence_array(sentence_array):
+    lemma_sentences = set() # Utilizamos un conjunto para evitar duplicados
+    for sentence in sentence_array:
+        doc = nlp(sentence.lower())
+        filter = ' '.join(token.lemma_ for token in doc if (token.lemma_ not in stopwords and token.lemma_ != "de" and token.lemma_ != "el"))
+        filter = filter.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("-"," ")
+        lemma_sentences.add(filter)
+    return list(lemma_sentences)  # Convertimos el conjunto a lista
+
+sentence_array = ['SINDROME PLEURO PULMONAR']
+lemma_sentences = process_sentence_array(sentence_array)
+
+print(lemma_sentences)
+
+
+
+    #de, la, que, el, en, y, a, los, del, se, las, por, un, para, con, no, una, su, al, lo, como, más, pero, sus, le, ya, o, este, sí, porque, esta, entre, cuando, muy, sin, sobre, también, me, hasta, hay, donde, quien, desde, todo, nos, durante, todos, uno, les, ni, contra, otros, ese, eso, ante, ellos, e, esto, mí, antes, algunos, qué, unos, yo, otro, otras, otra, él, tanto, esa, estos, mucho, quienes, nada, muchos, cual, poco, ella, estar, estas, algunas, algo, nosotros, mi, mis, tú, te, ti, tu, tus, ellas, nosotras, vosotros, vosotras, os, mío, mía, míos, mías, tuyo, tuya, tuyos, tuyas, suyo, suya, suyos, suyas, nuestro, nuestra, nuestros, nuestras, vuestro, vuestra, vuestros, vuestras, esos, esas, estoy, estás, está, estamos, estáis, están, esté, estés, estemos, estéis, estén, estaré, estarás, estará, estaremos, estaréis, estarán, estaría, estarías, estaríamos, estaríais, estarían, estaba, estabas, estábamos, estabais, estaban, estuve, estuviste, estuvo, estuvimos, estuvisteis, estuvieron, estuviera, estuvieras, estuviéramos, estuvierais, estuvieran, estuviese, estuvieses, estuviésemos, estuvieseis, estuviesen, estando, estado, estada, estados, estadas, estad, he, has, ha, hemos, habéis, han, haya, hayas, hayamos, hayáis, hayan, habré, habrás, habrá, habremos, habréis, habrán, habría, habrías, habríamos, habríais, habrían, había, habías, habíamos, habíais, habían, hube, hubiste, hubo, hubimos, hubisteis, hubieron, hubiera, hubieras, hubiéramos, hubierais, hubieran, hubiese, hubieses, hubiésemos, hubieseis, hubiesen, habiendo, habido, habida, habidos, habidas, soy, eres, es, somos, sois, son, sea, seas, seamos, seáis, sean, seré, serás, será, seremos, seréis, serán, sería, serías, seríamos, seríais, serían, era, eras, éramos, erais, eran, fui, fuiste, fue, fuimos, fuisteis, fueron, fuera, fueras, fuéramos, fuerais, fueran, fuese, fueses, fuésemos, fueseis, fuesen, siendo, sido, sed.
+
+"""
+
+
 class Goldman_Index:
     edad = 0 #Valor encontrado [Edad]
     edad_p = -1 #Puntaje asignado segun el indice
@@ -43,7 +77,7 @@ for atributo in atributos:
     if not callable(valor):  # Ignorar métodos
         print(f"{atributo}: {valor}")  # Imprimir nombre del atributo y su valor
 
-"""
+
 import os.path
 
 save_path = os.path.join(os.path.expanduser("~"),"Downloads")
@@ -59,35 +93,6 @@ toFile = "Hello World!"
 file1.write(toFile)
 
 file1.close()
-
-import spacy
-nlp = spacy.load('es_core_news_sm')
-nlp.Defaults.stop_words -= {"sin", "dia", "dias", "hoy"}
-
-stopwords = nlp.Defaults.stop_words
-#print(type(stopwords))
-#print(len(stopwords))
-#print(stopwords)
-
-
-
-def process_sentence_array(sentence_array):
-    lemma_sentences = set() # Utilizamos un conjunto para evitar duplicados
-    for sentence in sentence_array:
-        doc = nlp(sentence)
-        filter = ' '.join(token.lemma_ for token in doc if (token.lemma_ not in stopwords and token.lemma_ != "de" and token.lemma_ != "el"))
-        filter = filter.replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u").replace("-"," ")
-        lemma_sentences.add(filter)
-    return list(lemma_sentences)  # Convertimos el conjunto a lista
-
-sentence_array = ['remisión']
-lemma_sentences = process_sentence_array(sentence_array)
-
-print(lemma_sentences)
-
-
-
-    #de, la, que, el, en, y, a, los, del, se, las, por, un, para, con, no, una, su, al, lo, como, más, pero, sus, le, ya, o, este, sí, porque, esta, entre, cuando, muy, sin, sobre, también, me, hasta, hay, donde, quien, desde, todo, nos, durante, todos, uno, les, ni, contra, otros, ese, eso, ante, ellos, e, esto, mí, antes, algunos, qué, unos, yo, otro, otras, otra, él, tanto, esa, estos, mucho, quienes, nada, muchos, cual, poco, ella, estar, estas, algunas, algo, nosotros, mi, mis, tú, te, ti, tu, tus, ellas, nosotras, vosotros, vosotras, os, mío, mía, míos, mías, tuyo, tuya, tuyos, tuyas, suyo, suya, suyos, suyas, nuestro, nuestra, nuestros, nuestras, vuestro, vuestra, vuestros, vuestras, esos, esas, estoy, estás, está, estamos, estáis, están, esté, estés, estemos, estéis, estén, estaré, estarás, estará, estaremos, estaréis, estarán, estaría, estarías, estaríamos, estaríais, estarían, estaba, estabas, estábamos, estabais, estaban, estuve, estuviste, estuvo, estuvimos, estuvisteis, estuvieron, estuviera, estuvieras, estuviéramos, estuvierais, estuvieran, estuviese, estuvieses, estuviésemos, estuvieseis, estuviesen, estando, estado, estada, estados, estadas, estad, he, has, ha, hemos, habéis, han, haya, hayas, hayamos, hayáis, hayan, habré, habrás, habrá, habremos, habréis, habrán, habría, habrías, habríamos, habríais, habrían, había, habías, habíamos, habíais, habían, hube, hubiste, hubo, hubimos, hubisteis, hubieron, hubiera, hubieras, hubiéramos, hubierais, hubieran, hubiese, hubieses, hubiésemos, hubieseis, hubiesen, habiendo, habido, habida, habidos, habidas, soy, eres, es, somos, sois, son, sea, seas, seamos, seáis, sean, seré, serás, será, seremos, seréis, serán, sería, serías, seríamos, seríais, serían, era, eras, éramos, erais, eran, fui, fuiste, fue, fuimos, fuisteis, fueron, fuera, fueras, fuéramos, fuerais, fueran, fuese, fueses, fuésemos, fueseis, fuesen, siendo, sido, sed.
 
 
 

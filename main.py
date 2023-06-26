@@ -39,6 +39,7 @@ class Goldman_Index:
     ER_p = -1
 
     eval = ""
+    percent = 0
     total = 0
     is_empty = 0
 
@@ -62,6 +63,7 @@ class Puntaje_Lee:
     Cr_p = -1
 
     eval = ""
+    percent = 0
     total = 0
     is_empty = 0
 
@@ -101,6 +103,7 @@ class Detsky_Index:
 
     total = 0
     is_empty = 0
+    percent = 0
     eval = ""
 
 class Puntaje_Padua:
@@ -149,27 +152,20 @@ def MakeClass(type,Name): #Almacenar los objetos para poder accesarlos desde las
         session[var] = valor
     return 0
 
-def PopClass(type, Name):
-    atributos = [attr for attr in dir(type) if not callable(getattr(type, attr)) and not attr.startswith("__")]
-    for atributo in atributos:
-        var = Name+"."+f'{atributo}'
-        session.pop(var)
-    return 0
-
 def FindClass(type): #Acceder a los objetos guardados
     match type:
         case "Goldman":
             Object = Goldman_Index()
-            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER", "total", "is_empty", "eval"]
+            List = ["edad_p", "IAM_p", "JVD_p", "EA_p", "ECG_p", "CVP_p", "estado_p", "OR_p", "ER_p", "edad", "IAM", "JVD", "EA", "ECG", "CVP", "estado", "OR", "ER", "total", "is_empty", "eval", "percent"]
         case "Detsky":
             Object = Detsky_Index()
-            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER", "total", "is_empty", "eval"]
+            List = ["IAM_p", "ang_p", "angina_p", "edema_p", "EA_p", "ECG_p", "CAP_p", "estado_p", "edad_p", "ER_p","IAM", "ang", "angina", "edema", "EA", "ECG", "CAP", "estado", "edad", "ER", "total", "is_empty", "eval", "percent"]
         case "Lee":
             Object = Puntaje_Lee()
             List = ["OR_p", "isq_p", "cong_p", "CV_p", "diab_p", "Cr_p", "OR", "isq", "cong", "CV", "diab", "Cr", "total", "is_empty", "eval"]
         case "Padua":
             Object = Puntaje_Padua()
-            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH", "total", "is_empty", "eval"]
+            List = ["cancer_p", "TEV_p", "mov_p", "trombo_p", "OR_p", "edad_p", "falla_p", "IAM_p", "BMI_p", "TH_p", "cancer", "TEV", "mov", "trombo", "OR", "edad", "falla", "IAM", "BMI", "TH", "total", "is_empty", "eval", "percent"]
         case _:
             return 0
     for x in List:
@@ -185,7 +181,7 @@ app = Flask(__name__)
 app.secret_key = '6b615dbef677bb488569e68c'
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 #Limitar archivos a maximo 1MB
 app.config['UPLOAD_PATH'] = r'./static/uploads' #Path al que se subira la copia temporal de los archivos a ser procesados
-app.config['UPLOAD_EXTENSIONS'] = ['.doc', '.docx'] #Extensiones permitidas
+app.config['UPLOAD_EXTENSIONS'] = ['.doc', '.docx', '.DOC', '.DOCX'] #Extensiones permitidas
 
 #Crear interfaz de usuario para la aplicacion de escritorio
 ui = FlaskUI(app=app, server="flask", port=5000)
@@ -196,7 +192,7 @@ def instructions():
     return render_template('intro.html')
 
 @app.route('/home')
-def load():
+def home():
     session.clear() #Eliminar sesiones anteriores
     #Eliminar todos las copias temporales de los expedientes que se hayan quedado almacenados si la aplicación no se cerró adecuadamente
     basedir = os.path.abspath(os.path.dirname(__file__)) #Obtener el directorio actual
@@ -221,10 +217,9 @@ def index():
     if filename != '': #validar que si se subió un archivo
         file_ext = os.path.splitext(filename)[1]
         #agregar validación de si no hay archivo
-        if file_ext not in app.config['UPLOAD_EXTENSIONS'] or \
-                file_ext != fx.validate_file(uploaded_file):
+        if file_ext not in app.config['UPLOAD_EXTENSIONS'] or file_ext != fx.validate_file(uploaded_file):
             flash('Por favor ingrese solamente un archivo .doc o .docx')
-            return redirect(url_for('/home'))
+            return redirect(url_for('home'))
         basedir = os.path.abspath(os.path.dirname(__file__)) #Obtener el directorio actual
         uploaded_file.save(os.path.join(basedir,app.config['UPLOAD_PATH'], filename)) #Guardar una copia temporal del archivo subido
     return redirect(url_for('indices', name=filename))
@@ -261,7 +256,7 @@ def indices(name):
     fx.Find_cancer(f,text,Padua)
     fx.Find_TEV(f,text,Padua)
     fx.Find_trombo(f,text,Padua)
-    fx.Find_trauma(f,text,Padua)
+    fx.Find_trauma(f,text,Padua, Goldman, Lee)
     fx.Find_falla(f,text,Padua)
     fx.Find_reuma(f,text,Padua)
     fx.Find_BMI(f,text,Padua)
@@ -283,10 +278,6 @@ def print():
     Detsky = FindClass("Detsky")
     Lee = FindClass("Lee")
     Padua = FindClass("Padua")
-    PopClass(Goldman,"Goldman")
-    PopClass(Detsky,"Detsky")
-    PopClass(Lee,"Lee")
-    PopClass(Padua,"Padua")
     form_data = request.form
     if Goldman.edad_p == -1: #Edad
         Goldman.edad = Detsky.edad = Padua.edad = form_data["Goldman_edad"]
@@ -483,26 +474,16 @@ def print():
         else:
             Padua.TH = "El paciente no se encuentra en tratamiento hormonal."
     fx.AddTotal(Goldman, Detsky, Lee, Padua) #Hacer la suma final
-    MakeClass(Goldman,"Goldman")
-    MakeClass(Lee,"Lee")
-    MakeClass(Detsky,"Detsky")
-    MakeClass(Padua,"Padua")
-    session.modified = True
     #Cuando se vuelve a cargar la página después de guardar el archivo, mostrarle una alerta al usuario
     if session.get('archivo'):
         archivo = session.get('archivo')
+        session.pop("archivo")
         if os.path.isfile(archivo):
-            session.pop("archivo")
             flash("Archivo Guardado Exitosamente!\nLo encontrarás en la carpeta \"Descargas\"")
     return render_template('print.html',Goldman=Goldman, Detsky=Detsky, Lee=Lee, Padua=Padua)
 
-@app.route("/save", methods=['GET','POST'])
+@app.route("/save", methods=['GET', 'POST'])
 def save():
-    Goldman = FindClass("Goldman") #Recuperar los objetos
-    Detsky = FindClass("Detsky")
-    Lee = FindClass("Lee")
-    Padua = FindClass("Padua")
-
     nombre_file = request.args.get("nombre_file")
     nombre = request.args.get("nombre")
     filename = secure_filename(nombre_file+".doc")
@@ -511,40 +492,20 @@ def save():
     dt = datetime.now()
     time = f'{dt:%d-%m-%Y}'
 
-    content = f"Expediente del paciente: {nombre}\nFecha de modificación: {time}\nEdad: {Goldman.edad}\n\nAntecedentes:\n1. Índice de Goldman:\n"
+    Goldman_Point = request.args.get("Goldman_Point")
+    Goldman_Eval = request.args.get("Goldman_Eval")
+    Detsky_Point = request.args.get("Detsky_Point")
+    Detsky_Eval = request.args.get("Detsky_Eval")
+    Lee_Point = request.args.get("Lee_Point")
+    Lee_Eval = request.args.get("Lee_Eval")
+    Padua_Point = request.args.get("Padua_Point")
+    Padua_Eval = request.args.get("Padua_Eval")
 
-    G_atributos = [attr for attr in dir(Goldman) if not callable(getattr(Goldman, attr)) and not attr.startswith("__")]
-    i = 1
-    for atributo in G_atributos:
-        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
-            valor = getattr(Goldman, atributo)  # Obtener el valor del atributo
-            content += f'- {valor}\n'
-        i = i+1
-    content += f'- Puntaje total: {getattr(Goldman, "total")}\n\n2. Índice de Detsky'
-    D_atributos = [attr for attr in dir(Detsky) if not callable(getattr(Detsky, attr)) and not attr.startswith("__")]
-    i = 1
-    for atributo in D_atributos:
-        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
-            valor = getattr(Detsky, atributo)  # Obtener el valor del atributo
-            content += f'- {valor}\n'
-        i = i+1
-    content += f'- Puntaje total: {getattr(Detsky, "total")}\n\n3. Puntaje de Lee:\n'
-    L_atributos = [attr for attr in dir(Lee) if not callable(getattr(Lee, attr)) and not attr.startswith("__")]
-    i = 1
-    for atributo in L_atributos:
-        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
-            valor = getattr(Lee, atributo)  # Obtener el valor del atributo
-            content += f'- {valor}\n'
-        i = i+1
-    content += f'- Puntaje total: {getattr(Lee, "total")}\n\n4. Puntaje de Padua:\n'
-    P_atributos = [attr for attr in dir(Padua) if not callable(getattr(Padua, attr)) and not attr.startswith("__")]
-    i = 1
-    for atributo in P_atributos:
-        if i % 2 != 0 and atributo != "total" and atributo != "is_empty":
-            valor = getattr(Padua, atributo)  # Obtener el valor del atributo
-            content += f'- {valor}\n'
-        i = i+1
-    content += f'- Puntaje total: {getattr(Padua, "total")}'
+    content = f"""Expediente del paciente: {nombre}\nFecha de modificación: {time}
+                \n\n1. Índice de Goldman:\n- Puntaje calculado: {Goldman_Point}\n- {Goldman_Eval}
+                \n\n2. Índice de Detsky:\n- Puntaje calculado: {Detsky_Point}\n- {Detsky_Eval}
+                \n\n3. Puntaje de Lee:\n- Puntaje calculado: {Lee_Point}\n- {Lee_Eval}
+                \n\n4. Puntaje de Padua:\n- Puntaje calculado: {Padua_Point}\n- {Padua_Eval}"""
 
     file = open(completeName, "w+", encoding='utf-8')
     file.write(u'\ufeff')
@@ -553,7 +514,7 @@ def save():
 
     session['archivo'] = completeName
 
-    return redirect(url_for('print'))
+    return redirect(url_for('print'),code=307)
 
 #Funcion main driver
 if __name__ == '__main__':
